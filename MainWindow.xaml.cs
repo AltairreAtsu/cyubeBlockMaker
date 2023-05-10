@@ -14,6 +14,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.IO;
 using Microsoft.Win32;
+using Ookii.Dialogs.Wpf;
+using CyubeBlockMaker.File_Menu_Options;
 
 namespace CyubeBlockMaker
 {
@@ -28,7 +30,6 @@ namespace CyubeBlockMaker
 		private bool nameInvalidFlag = false;
 		private bool creatorNameInvalidFlag = false;
 		private bool uniqueIDInvalidFlag = false;
-		private bool yieldInvalidFlag = false;
 		private bool animationSpeedInvalidFlag = false;
 		private bool uniqueIDToDropInvalidFlag = false;
 
@@ -44,11 +45,6 @@ namespace CyubeBlockMaker
 			InitializeTextureTab();
 		}
 
-		private void CheckBox_Checked(object sender, RoutedEventArgs e)
-		{
-
-        }
-
 		private void InitializeFileMenu()
 		{
 			List<IControlMenuOption> fileMenuOptions = new List<IControlMenuOption>();
@@ -56,13 +52,14 @@ namespace CyubeBlockMaker
 			fileMenuOptions.Add(new OpenFileOption());
 			fileMenuOptions.Add(new SaveFileOption());
 			fileMenuOptions.Add(new SaveAsOption());
+			fileMenuOptions.Add(new ExportFileOption());
 			File_MenuItem.InitializeOptions(fileMenuOptions);
 		}
 
 		private void InitializeTextureTab()
 		{
 			AddTexturePanel("all", TexturePanelType.Albedo);
-			AddTexturePanel("all__small", TexturePanelType.Albedo_Small);
+			AddTexturePanel("all_small", TexturePanelType.Albedo_Small);
 			AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
 		}
 
@@ -72,8 +69,8 @@ namespace CyubeBlockMaker
 			Category_TextBox.Text = string.Empty;
 			CreatorName_TextBox.Text = string.Empty;
 			UniqueID_Textbox.Text = string.Empty;
-			Yield_Textbox.Text = string.Empty;
-			AnimationSpeed_TextBox.Text = string.Empty;
+			Yield_Slider.Value = 0;
+			AnimationSpeed_Slider.Value = 0;
 			SimliarTo_ComboBox.SelectedIndex = 0;
 			AllowCrystalPlace_Checkbox.IsChecked = true;
 			AllowMove_Checkbox.IsChecked = true;
@@ -148,63 +145,13 @@ namespace CyubeBlockMaker
 			if (!uniqueIDInvalidFlag) block.UniqueID = uID;
 
 			// Yield Validation
-			if (Yield_Textbox.Text == string.Empty)
-			{
-				yieldInvalidFlag = true;
-				saveFailed = true;
-				Yield_Textbox.BorderBrush = Brushes.Red;
-				errorMessages.Add("Yield Field cannot be empty!");
-			}
-			else
-			{
-				try
-				{
-					yield = int.Parse(Yield_Textbox.Text);
-					if(yield < 1)
-					{
-						yieldInvalidFlag = true;
-						saveFailed = true;
-						Yield_Textbox.BorderBrush = Brushes.Red;
-						errorMessages.Add("Yield cannot be less than 1!");
-					}
-					else if(yield > 50)
-					{
-						yieldInvalidFlag = true;
-						saveFailed = true;
-						Yield_Textbox.BorderBrush = Brushes.Red;
-						errorMessages.Add("Yield cannot be greater than 50!");
-					}
-				}
-				catch
-				{
-					yieldInvalidFlag = true;
-					saveFailed = true;
-					Yield_Textbox.BorderBrush = Brushes.Red;
-					errorMessages.Add("Failed to Parse Yield. Please ensure only numeric characters are used. Do not leave any whitespace between the numbers.");
-				}
-
-			}
-			if(!yieldInvalidFlag) block.Yield = yield;
+			block.Yield = (int)Math.Round(Yield_Slider.Value);
 
 			// SimilarTo Validation
 			block.SimilarTo = SimliarTo_ComboBox.SelectedIndex+1;
 
 			// AnimationSpeed Validation
-			if (AnimationSpeed_TextBox.Text != string.Empty)
-			{
-				try
-				{
-					int animationSpeed = int.Parse(AnimationSpeed_TextBox.Text);
-					block.AnimationSpeed = animationSpeed;
-				}
-				catch
-				{
-					animationSpeedInvalidFlag = true;
-					saveFailed = true;
-					AnimationSpeed_TextBox.BorderBrush = Brushes.Red;
-					errorMessages.Add("Failed to Parse AnimationSpeed! Please ensure only numeric characters are used. Do not leave whitespace between the numbers.");
-				}
-			}
+			block.AnimationSpeed = (int)Math.Round(AnimationSpeed_Slider.Value);
 
 			// UniqueIDToDrop Validation
 			if(UniqueIDToDrop_TextBox.Text == string.Empty)
@@ -284,22 +231,38 @@ namespace CyubeBlockMaker
 			}
 			else
 			{
-				SaveFileDialog saveFileDialog = new SaveFileDialog();
-				if(saveFileDialog.ShowDialog() == true)
+				VistaFolderBrowserDialog folderBrowserDialog = new VistaFolderBrowserDialog();
+				
+				if(folderBrowserDialog.ShowDialog() == true)
 				{
-					JsonManager.WriteCustomBlockJson(saveFileDialog.FileName, block);
+					JsonManager.WriteCustomBlockJson(folderBrowserDialog.SelectedPath + System.IO.Path.DirectorySeparatorChar + block.Name + ".block", block);
+
+					string textureDir = folderBrowserDialog.SelectedPath + System.IO.Path.DirectorySeparatorChar + "Textures";
+					Directory.CreateDirectory(textureDir);
+					textureDir = textureDir + System.IO.Path.DirectorySeparatorChar;
+					foreach(TexturePanel texturePanel in texturePanels)
+					{
+						if(texturePanel.TextureURI != null)
+						{
+							
+							File.Copy(texturePanel.TextureURI.LocalPath, textureDir + texturePanel.slotName + ".png");
+						}
+					}
 				}
 			}
 		}
-		public void LoadCustomBlock(CustomBlock block)
+		public void LoadCustomBlock(CustomBlock block, string path)
 		{
 			Name_TextBox.Text = block.Name;
 			CreatorName_TextBox.Text = block.CreatorName;
-			Yield_Textbox.Text = block.Yield.ToString();
+
+			Yield_Slider.Value = Math.Max(0, Math.Min(block.Yield, 50));
+
 			UniqueID_Textbox.Text = block.UniqueID.ToString();
 			SimliarTo_ComboBox.SelectedIndex = block.SimilarTo-1;
 
-			AnimationSpeed_TextBox.Text = block.AnimationSpeed.ToString();
+			AnimationSpeed_Slider.Value = Math.Max(0, Math.Min(block.AnimationSpeed, 255));
+
 			AllowMove_Checkbox.IsChecked = block.AllowMove;
 			AllowCrystalPlace_Checkbox.IsChecked = block.AllowCrystalAssistedBlockPlacement;
 			if(block.CategoryName != null) Category_TextBox.Text = block.CategoryName;
@@ -309,7 +272,33 @@ namespace CyubeBlockMaker
 			TextureMode_ComboBox.SelectedIndex = block.Textures.Mode - 1;
 			WithNormals_CheckBox.IsChecked = block.Textures.WithNormals;
 			WithGlowMaps_CheckBox.IsChecked = block.Textures.WithGlowMap;
+
+            string dir = System.IO.Path.GetDirectoryName(path);
+			dir = dir + System.IO.Path.DirectorySeparatorChar + "Textures";
+			if (Directory.Exists(dir))
+			{
+				string[] files = Directory.GetFiles(dir);
+				foreach (string file in files)
+				{
+					string fileName = System.IO.Path.GetFileNameWithoutExtension(file);
+					foreach (TexturePanel panel in texturePanels)
+					{
+						if (panel.slotName.Equals(fileName))
+						{
+							panel.SetImageSource(file);
+						}
+					}
+				}
+			}
 			//TODO Attempt to Load Textures, If Fail setup Texture Slots according to the Texture Mode
+		}
+		public void Export()
+		{
+			// Build the Folder Structure in the target directory
+			// Export the Json
+			// Convert the images to DDS
+			// Save the DDS images to the Textures folder
+			// Notify user task complete
 		}
 
 		// Numeric Enforcement Event Handlers
@@ -355,13 +344,6 @@ namespace CyubeBlockMaker
 				UniqueID_Textbox.BorderBrush = SystemColors.ControlDarkBrush;
 			}
 		}
-		private void Yield_Textbox_TextChanged(object sender, TextChangedEventArgs e)
-		{
-			if(yieldInvalidFlag){
-				yieldInvalidFlag = false;
-				Yield_Textbox.BorderBrush = SystemColors.ControlDarkBrush;
-			}
-		}
 		private void UniqueIDToDrop_TextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			if (uniqueIDToDropInvalidFlag)
@@ -390,9 +372,9 @@ namespace CyubeBlockMaker
 			if(TextureMode_ComboBox.SelectedIndex == 1)
 			{
 				AddTexturePanel("sides", TexturePanelType.Albedo);
-				AddTexturePanel("sides__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("sides_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("updown", TexturePanelType.Albedo);
-				AddTexturePanel("updown__smal", TexturePanelType.Albedo_Small);
+				AddTexturePanel("updown_smal", TexturePanelType.Albedo_Small);
 				AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
 
 				if (WithNormals_CheckBox.IsChecked == true)
@@ -403,11 +385,11 @@ namespace CyubeBlockMaker
 			if(TextureMode_ComboBox.SelectedIndex == 2)
 			{
 				AddTexturePanel("sides", TexturePanelType.Albedo);
-				AddTexturePanel("sides__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("sides_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("up", TexturePanelType.Albedo);
-				AddTexturePanel("up__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("up_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("down", TexturePanelType.Albedo);
-				AddTexturePanel("down__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("down_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
 
 				if (WithNormals_CheckBox.IsChecked == true)
@@ -418,17 +400,17 @@ namespace CyubeBlockMaker
 			if(TextureMode_ComboBox.SelectedIndex == 3)
 			{
 				AddTexturePanel("up", TexturePanelType.Albedo);
-				AddTexturePanel("up__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("up_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("down", TexturePanelType.Albedo);
-				AddTexturePanel("down__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("down_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("left", TexturePanelType.Albedo);
-				AddTexturePanel("left__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("left_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("right", TexturePanelType.Albedo);
-				AddTexturePanel("right__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("right_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("front", TexturePanelType.Albedo);
-				AddTexturePanel("front__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("front_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("back", TexturePanelType.Albedo);
-				AddTexturePanel("back__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("back_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
 
 				if (WithNormals_CheckBox.IsChecked == true)
@@ -441,54 +423,54 @@ namespace CyubeBlockMaker
 		{
 			if(textureMode == 0)
 			{
-				AddTexturePanel("all__normal", TexturePanelType.Normal);
+				AddTexturePanel("all_normal", TexturePanelType.Normal);
 			}
 			if (textureMode == 1)
 			{
-				AddTexturePanel("sides__normal", TexturePanelType.Normal);
-				AddTexturePanel("updown__normal", TexturePanelType.Normal);
+				AddTexturePanel("sides_normal", TexturePanelType.Normal);
+				AddTexturePanel("updown_normal", TexturePanelType.Normal);
 			}
 			if (textureMode == 2)
 			{
-				AddTexturePanel("sides__normal", TexturePanelType.Normal);
-				AddTexturePanel("up__normal", TexturePanelType.Normal);
-				AddTexturePanel("down__normal", TexturePanelType.Normal);
+				AddTexturePanel("sides_normal", TexturePanelType.Normal);
+				AddTexturePanel("up_normal", TexturePanelType.Normal);
+				AddTexturePanel("down_normal", TexturePanelType.Normal);
 			}
 			if (textureMode == 3)
 			{
-				AddTexturePanel("up__normal", TexturePanelType.Normal);
-				AddTexturePanel("down__normal", TexturePanelType.Normal);
-				AddTexturePanel("left__normal", TexturePanelType.Normal);
-				AddTexturePanel("right__normal", TexturePanelType.Normal);
-				AddTexturePanel("front__normal", TexturePanelType.Normal);
-				AddTexturePanel("back__normal", TexturePanelType.Normal);
+				AddTexturePanel("up_normal", TexturePanelType.Normal);
+				AddTexturePanel("down_normal", TexturePanelType.Normal);
+				AddTexturePanel("left_normal", TexturePanelType.Normal);
+				AddTexturePanel("right_normal", TexturePanelType.Normal);
+				AddTexturePanel("front_normal", TexturePanelType.Normal);
+				AddTexturePanel("back_normal", TexturePanelType.Normal);
 			}
 		}
 		private void AddGlowMapPanels(int textureMode)
 		{
 			if(textureMode == 0)
 			{
-				AddTexturePanel("all__glow", TexturePanelType.Glow);
+				AddTexturePanel("all_glow", TexturePanelType.Glow);
 			}
 			if (textureMode == 1)
 			{
-				AddTexturePanel("sides__glow", TexturePanelType.Glow);
-				AddTexturePanel("updown__glow", TexturePanelType.Glow);
+				AddTexturePanel("sides_glow", TexturePanelType.Glow);
+				AddTexturePanel("updown_glow", TexturePanelType.Glow);
 			}
 			if(textureMode == 2) 
 			{
-				AddTexturePanel("sides__glow", TexturePanelType.Glow);
-				AddTexturePanel("up__glow", TexturePanelType.Glow);
-				AddTexturePanel("down__glow", TexturePanelType.Glow);
+				AddTexturePanel("sides_glow", TexturePanelType.Glow);
+				AddTexturePanel("up_glow", TexturePanelType.Glow);
+				AddTexturePanel("down_glow", TexturePanelType.Glow);
 			}
 			if (textureMode == 3)
 			{
-				AddTexturePanel("up__glow", TexturePanelType.Glow);
-				AddTexturePanel("down__glow", TexturePanelType.Glow);
-				AddTexturePanel("left__glow", TexturePanelType.Glow);
-				AddTexturePanel("right__glow", TexturePanelType.Glow);
-				AddTexturePanel("front__glow", TexturePanelType.Glow);
-				AddTexturePanel("back__glow", TexturePanelType.Glow);
+				AddTexturePanel("up_glow", TexturePanelType.Glow);
+				AddTexturePanel("down_glow", TexturePanelType.Glow);
+				AddTexturePanel("left_glow", TexturePanelType.Glow);
+				AddTexturePanel("right_glow", TexturePanelType.Glow);
+				AddTexturePanel("front_glow", TexturePanelType.Glow);
+				AddTexturePanel("back_glow", TexturePanelType.Glow);
 			}
 		}
 		private void RemoveAllPanelsOfType(TexturePanelType type)
@@ -540,7 +522,8 @@ namespace CyubeBlockMaker
 		{
 			RemoveAllPanelsOfType(TexturePanelType.Glow);
 		}
-
+		
+		// Recipe Import
 		private void ImportRecipe_Click(object sender, RoutedEventArgs e)
 		{
 			OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -551,11 +534,32 @@ namespace CyubeBlockMaker
 				BlockRecipe br = JsonManager.ReadRecipe(openFileDialog.FileName);
 				if (br != null)
 				{
+					MessageBox.Show("Imported Sucessfully.");
 					recipe = br;
 				}
 				else
 				{
 					MessageBox.Show("Failed to read the file! Please ensure the exported cyube recipe has not been modified in anyway!");
+				}
+			}
+		}
+		private void Button_Drop(object sender, DragEventArgs e)
+		{
+			if (e.Data.GetDataPresent(DataFormats.FileDrop))
+			{
+				string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+				if (System.IO.Path.GetExtension(files[0]).Equals(".txt"))
+				{
+					BlockRecipe br = JsonManager.ReadRecipe(files[0]);
+					if(br != null)
+					{
+						MessageBox.Show("Imported Sucessfully.");
+						recipe = br;
+					}
+					else
+					{
+						MessageBox.Show("Failed to read the file! Please ensure the exported cyube recipe has not been modified in anyway!");
+					}
 				}
 			}
 		}

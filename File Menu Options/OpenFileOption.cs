@@ -8,7 +8,7 @@ namespace CyubeBlockMaker
 		public void Execute()
 		{
 			OpenFileDialog fileDialog = new OpenFileDialog();
-			fileDialog.Filter = "JSON (*.json)|*.json";
+			fileDialog.Filter = "Block (*.block)|*.block";
 			fileDialog.Title = "Select a Custom Block to open";
 
 			if (fileDialog.ShowDialog() == true)
@@ -20,7 +20,7 @@ namespace CyubeBlockMaker
 					MessageBox.Show("Error Loading the specified  file, please try again.");
 					return;
 				}
-				MainWindow.mainWindow.LoadCustomBlock(block);
+				MainWindow.mainWindow.LoadCustomBlock(block, filePath);
 			}
 		}
 

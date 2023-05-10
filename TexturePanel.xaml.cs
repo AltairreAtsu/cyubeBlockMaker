@@ -61,6 +61,17 @@ namespace CyubeBlockMaker
 				}
 			}
 		}
+
+		public bool SetImageSource(string filePath)
+		{
+			if (System.IO.Path.GetExtension(filePath).Equals(".png"))
+			{
+				TextureURI = new Uri(filePath);
+				TexturePreview_Image.Source = new BitmapImage(TextureURI);
+				return true;
+			}
+			return false;
+		}
 	}
 
 	public enum TexturePanelType

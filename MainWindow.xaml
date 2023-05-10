@@ -47,7 +47,7 @@
 								<ColumnDefinition Width="2.7*"/>
 							</Grid.ColumnDefinitions>
 							<Label Content="Yield" Grid.Column="0"/>
-							<TextBox TextWrapping="Wrap" Grid.Column="2" Name="Yield_Textbox" PreviewTextInput="Yield_TextBox_PreviewTextInput" TextChanged="Yield_Textbox_TextChanged"/>
+							<Slider Name="Yield_Slider" Grid.Column="1" Minimum="0" Maximum="50" AutoToolTipPlacement="TopLeft" Interval="1" AutoToolTipPrecision="0" />
 						</Grid>
 						<Grid Grid.Row="3" Grid.Column="0">
 							<Grid.ColumnDefinitions>
@@ -55,7 +55,7 @@
 								<ColumnDefinition Width="2.7*"/>
 							</Grid.ColumnDefinitions>
 							<Label Content="Animation Speed" Grid.Column="0"/>
-							<TextBox TextWrapping="Wrap" Name="AnimationSpeed_TextBox" PreviewTextInput="AnimationSpeed_TextBox_PreviewTextInput" Grid.Column="1"/>
+							<Slider Name="AnimationSpeed_Slider" Grid.Column="1" Minimum="0" Maximum="255" AutoToolTipPlacement="TopLeft" Interval="1" AutoToolTipPrecision="0"/>
 						</Grid>
 						<Grid Grid.Row="0" Grid.Column="1">
 							<Grid.ColumnDefinitions>
@@ -96,9 +96,9 @@
 						</Grid>
 					</Grid>
 					<DockPanel LastChildFill="false" Margin="10">
-						<CheckBox Name="AllowMove_Checkbox" Content="Allow Move" IsChecked="True" Checked="CheckBox_Checked"/>
-						<CheckBox Name="AllowCrystalPlace_Checkbox" Content="Allow Crystal Place" IsChecked="True" Checked="CheckBox_Checked"/>
-						<Button Content="Import recipe from file" Click="ImportRecipe_Click" Margin="10,0"/>
+						<CheckBox Name="AllowMove_Checkbox" Content="Allow Move" IsChecked="True" VerticalAlignment="Center"/>
+						<CheckBox Name="AllowCrystalPlace_Checkbox" Content="Allow Crystal Place" IsChecked="True" VerticalAlignment="Center"/>
+						<Button Content="Import recipe from file" Click="ImportRecipe_Click" Margin="10,0" VerticalAlignment="Center" AllowDrop="True" Drop="Button_Drop"/>
 					</DockPanel>
 				</StackPanel>
 			</TabItem>

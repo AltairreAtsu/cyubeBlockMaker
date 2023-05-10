@@ -50,7 +50,6 @@ namespace CyubeBlockMaker
 				string jsonString = File.ReadAllText(path);
 				jsonString = jsonString.Substring(10);
 				jsonString = jsonString.Substring(0, jsonString.Length - 1);
-				MessageBox.Show(jsonString);
 
 				BlockRecipe? recipe = JsonConvert.DeserializeObject<BlockRecipe>(jsonString);
 				return recipe;
