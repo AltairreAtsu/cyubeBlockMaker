@@ -11,7 +11,7 @@
 			<local:ControlMenuItem x:Name="File_MenuItem"  Content="File"/>
 		</DockPanel>
 		<TabControl>
-			<TabItem Header="Block Settings">
+			<TabItem Header="Properties">
 				<StackPanel>
 					<Grid Margin="10">
 						<Grid.RowDefinitions>
@@ -126,8 +126,8 @@
 								<ComboBoxItem Content="4: left, right, front, back, up, and down"/>
 							</ComboBox>
 						</Grid>
-						<CheckBox Name="WithNormals_CheckBox" Content="With Normals" VerticalAlignment="Center" Grid.Column="1"/>
-						<CheckBox Name="WithGlowMaps_CheckBox" Content="With Glow Maps" VerticalAlignment="Center" Grid.Column="2"/>
+						<CheckBox Name="WithNormals_CheckBox" Content="With Normals" VerticalAlignment="Center" Grid.Column="1" Unchecked="WithNormals_CheckBox_Unchecked" Checked="WithNormals_CheckBox_Checked"/>
+						<CheckBox Name="WithGlowMaps_CheckBox" Content="With Glow Maps" VerticalAlignment="Center" Grid.Column="2" Unchecked="WithGlowMaps_CheckBox_Unchecked" Checked="WithGlowMaps_CheckBox_Checked"/>
 					</Grid>
 					<ScrollViewer Grid.Row="1" MaxHeight="280">
 						<WrapPanel Name="TextureTabWrapPanel">

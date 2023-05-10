@@ -21,7 +21,9 @@ namespace CyubeBlockMaker
 	/// </summary>
 	public partial class TexturePanel : UserControl
 	{
-		Uri TextureURI;
+		public Uri TextureURI;
+		public TexturePanelType textureType = TexturePanelType.Albedo;
+		public string slotName;
 		
 		public TexturePanel()
 		{
@@ -59,5 +61,14 @@ namespace CyubeBlockMaker
 				}
 			}
 		}
+	}
+
+	public enum TexturePanelType
+	{
+		Albedo,
+		Albedo_Small,
+		Normal,
+		Glow,
+		RecipePreview
 	}
 }

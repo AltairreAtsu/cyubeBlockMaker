@@ -59,23 +59,9 @@ namespace CyubeBlockMaker
 
 		private void InitializeTextureTab()
 		{
-			TexturePanel texturePanel = new TexturePanel();
-			texturePanel.TextureName_Label.Content = "all.dds";
-			texturePanel.Margin = new Thickness(10,10,0,0);
-			texturePanels.Add(texturePanel);
-			TextureTabWrapPanel.Children.Add(texturePanel);
-
-			texturePanel = new TexturePanel();
-			texturePanel.TextureName_Label.Content = "all__small.dds";
-			texturePanel.Margin = new Thickness(10, 10, 0, 0);
-			texturePanels.Add(texturePanel);
-			TextureTabWrapPanel.Children.Add(texturePanel);
-
-			texturePanel = new TexturePanel();
-			texturePanel.TextureName_Label.Content = "RecipePreview.dds";
-			texturePanel.Margin = new Thickness(10, 10, 0, 0);
-			texturePanels.Add(texturePanel);
-			TextureTabWrapPanel.Children.Add(texturePanel);
+			AddTexturePanel("all", TexturePanelType.Albedo);
+			AddTexturePanel("all__small", TexturePanelType.Albedo_Small);
+			AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
 		}
 
 		public void ResetWindow()
@@ -93,7 +79,8 @@ namespace CyubeBlockMaker
 			WithGlowMaps_CheckBox.IsChecked = false;
 			TextureMode_ComboBox.SelectedIndex = 0;
 			TextureTabWrapPanel.Children.Clear();
-			//TODO Attempt to Load Textures, If Fail setup Texture Slots according to the Texture Mode
+			// TODO Prep Texture Wrap according to the selected mode
+			
 		}
 		public void Save()
 		{
@@ -292,8 +279,9 @@ namespace CyubeBlockMaker
 			AllowMove_Checkbox.IsChecked = block.AllowMove;
 			AllowCrystalPlace_Checkbox.IsChecked = block.AllowCrystalAssistedBlockPlacement;
 			if(block.CategoryName != null) Category_TextBox.Text = block.CategoryName;
+			//TODO Attempt to Load Textures, If Fail setup Texture Slots according to the Texture Mode
 		}
-		
+
 		// Numeric Enforcement Event Handlers
 		private void Yield_TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
 		{
@@ -353,9 +341,174 @@ namespace CyubeBlockMaker
 			}
 		}
 
+		// Texture Panel Mangement
 		private void TextureMode_ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			if (TextureTabWrapPanel == null) return;
+			TextureTabWrapPanel.Children.Clear();
+			texturePanels.Clear();
 
+			if(TextureMode_ComboBox.SelectedIndex == 0)
+			{
+				InitializeTextureTab();
+
+				if(WithNormals_CheckBox.IsChecked == true)
+					AddNormalMapPanels(TextureMode_ComboBox.SelectedIndex);
+				if (WithGlowMaps_CheckBox.IsChecked == true)
+					AddGlowMapPanels(TextureMode_ComboBox.SelectedIndex);
+			}
+			if(TextureMode_ComboBox.SelectedIndex == 1)
+			{
+				AddTexturePanel("sides", TexturePanelType.Albedo);
+				AddTexturePanel("sides__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("updown", TexturePanelType.Albedo);
+				AddTexturePanel("updown__smal", TexturePanelType.Albedo_Small);
+				AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
+
+				if (WithNormals_CheckBox.IsChecked == true)
+					AddNormalMapPanels(TextureMode_ComboBox.SelectedIndex);
+				if (WithGlowMaps_CheckBox.IsChecked == true)
+					AddGlowMapPanels(TextureMode_ComboBox.SelectedIndex);
+			}
+			if(TextureMode_ComboBox.SelectedIndex == 2)
+			{
+				AddTexturePanel("sides", TexturePanelType.Albedo);
+				AddTexturePanel("sides__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("up", TexturePanelType.Albedo);
+				AddTexturePanel("up__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("down", TexturePanelType.Albedo);
+				AddTexturePanel("down__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
+
+				if (WithNormals_CheckBox.IsChecked == true)
+					AddNormalMapPanels(TextureMode_ComboBox.SelectedIndex);
+				if (WithGlowMaps_CheckBox.IsChecked == true)
+					AddGlowMapPanels(TextureMode_ComboBox.SelectedIndex);
+			}
+			if(TextureMode_ComboBox.SelectedIndex == 3)
+			{
+				AddTexturePanel("up", TexturePanelType.Albedo);
+				AddTexturePanel("up__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("down", TexturePanelType.Albedo);
+				AddTexturePanel("down__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("left", TexturePanelType.Albedo);
+				AddTexturePanel("left__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("right", TexturePanelType.Albedo);
+				AddTexturePanel("right__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("front", TexturePanelType.Albedo);
+				AddTexturePanel("front__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("back", TexturePanelType.Albedo);
+				AddTexturePanel("back__small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
+
+				if (WithNormals_CheckBox.IsChecked == true)
+					AddNormalMapPanels(TextureMode_ComboBox.SelectedIndex);
+				if (WithGlowMaps_CheckBox.IsChecked == true)
+					AddGlowMapPanels(TextureMode_ComboBox.SelectedIndex);
+			}
+		}
+		private void AddNormalMapPanels(int textureMode)
+		{
+			if(textureMode == 0)
+			{
+				AddTexturePanel("all__normal", TexturePanelType.Normal);
+			}
+			if (textureMode == 1)
+			{
+				AddTexturePanel("sides__normal", TexturePanelType.Normal);
+				AddTexturePanel("updown__normal", TexturePanelType.Normal);
+			}
+			if (textureMode == 2)
+			{
+				AddTexturePanel("sides__normal", TexturePanelType.Normal);
+				AddTexturePanel("up__normal", TexturePanelType.Normal);
+				AddTexturePanel("down__normal", TexturePanelType.Normal);
+			}
+			if (textureMode == 3)
+			{
+				AddTexturePanel("up__normal", TexturePanelType.Normal);
+				AddTexturePanel("down__normal", TexturePanelType.Normal);
+				AddTexturePanel("left__normal", TexturePanelType.Normal);
+				AddTexturePanel("right__normal", TexturePanelType.Normal);
+				AddTexturePanel("front__normal", TexturePanelType.Normal);
+				AddTexturePanel("back__normal", TexturePanelType.Normal);
+			}
+		}
+		private void AddGlowMapPanels(int textureMode)
+		{
+			if(textureMode == 0)
+			{
+				AddTexturePanel("all__glow", TexturePanelType.Glow);
+			}
+			if (textureMode == 1)
+			{
+				AddTexturePanel("sides__glow", TexturePanelType.Glow);
+				AddTexturePanel("updown__glow", TexturePanelType.Glow);
+			}
+			if(textureMode == 2) 
+			{
+				AddTexturePanel("sides__glow", TexturePanelType.Glow);
+				AddTexturePanel("up__glow", TexturePanelType.Glow);
+				AddTexturePanel("down__glow", TexturePanelType.Glow);
+			}
+			if (textureMode == 3)
+			{
+				AddTexturePanel("up__glow", TexturePanelType.Glow);
+				AddTexturePanel("down__glow", TexturePanelType.Glow);
+				AddTexturePanel("left__glow", TexturePanelType.Glow);
+				AddTexturePanel("right__glow", TexturePanelType.Glow);
+				AddTexturePanel("front__glow", TexturePanelType.Glow);
+				AddTexturePanel("back__glow", TexturePanelType.Glow);
+			}
+		}
+		private void RemoveAllPanelsOfType(TexturePanelType type)
+		{
+			List<TexturePanel> removaltargets = new List<TexturePanel>();
+
+			foreach(TexturePanel panel in texturePanels)
+			{
+				if(panel.textureType == type)
+				{
+					removaltargets.Add(panel);
+				}
+			}
+			foreach(TexturePanel panel in removaltargets)
+			{
+				texturePanels.Remove(panel);
+				TextureTabWrapPanel.Children.Remove(panel);
+			}
+		}
+
+		private void AddTexturePanel(string slotName, TexturePanelType textureType)
+		{
+			TexturePanel texturePanel = new TexturePanel();
+			texturePanel.TextureName_Label.Content = slotName;
+			texturePanel.Margin = new Thickness(10, 10, 0, 0);
+
+			texturePanel.slotName = slotName;
+			texturePanel.textureType = textureType;
+
+			texturePanels.Add(texturePanel);
+			TextureTabWrapPanel.Children.Add(texturePanel);
+		}
+
+		private void WithNormals_CheckBox_Checked(object sender, RoutedEventArgs e)
+		{
+
+				AddNormalMapPanels(TextureMode_ComboBox.SelectedIndex);
+				
+		}
+		private void WithGlowMaps_CheckBox_Checked(object sender, RoutedEventArgs e)
+		{
+				AddGlowMapPanels(TextureMode_ComboBox.SelectedIndex);
+		}
+		private void WithNormals_CheckBox_Unchecked(object sender, RoutedEventArgs e)
+		{
+			RemoveAllPanelsOfType(TexturePanelType.Normal);
+		}
+		private void WithGlowMaps_CheckBox_Unchecked(object sender, RoutedEventArgs e)
+		{
+			RemoveAllPanelsOfType(TexturePanelType.Glow);
 		}
 	}
 }
