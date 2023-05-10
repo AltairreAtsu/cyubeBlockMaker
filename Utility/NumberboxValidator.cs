@@ -11,7 +11,7 @@ namespace CyubeBlockMaker
 {
 	static class NumberboxValidator
 	{
-		private static readonly Regex _regex = new Regex("[^0-9]"); //regex that matches disallowed text
+		private static readonly Regex _regex = new Regex("[^0-9-]"); //regex that matches disallowed text
 		private static readonly Regex _floatRegex = new Regex("[^0-9.]");
 		
 		private static bool IsTextAllowed(string text)

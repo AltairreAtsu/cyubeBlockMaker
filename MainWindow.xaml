@@ -98,6 +98,7 @@
 					<DockPanel LastChildFill="false" Margin="10">
 						<CheckBox Name="AllowMove_Checkbox" Content="Allow Move" IsChecked="True" Checked="CheckBox_Checked"/>
 						<CheckBox Name="AllowCrystalPlace_Checkbox" Content="Allow Crystal Place" IsChecked="True" Checked="CheckBox_Checked"/>
+						<Button Content="Import recipe from file" Click="ImportRecipe_Click" Margin="10,0"/>
 					</DockPanel>
 				</StackPanel>
 			</TabItem>

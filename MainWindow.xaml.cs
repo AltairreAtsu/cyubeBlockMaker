@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.IO;
+using Microsoft.Win32;
 
 namespace CyubeBlockMaker
 {
@@ -32,6 +33,7 @@ namespace CyubeBlockMaker
 		private bool uniqueIDToDropInvalidFlag = false;
 
 		private List<TexturePanel> texturePanels = new List<TexturePanel>();
+		private BlockRecipe recipe;
 
 		public MainWindow()
 		{
@@ -89,7 +91,6 @@ namespace CyubeBlockMaker
 			int uID = 0;
 			int yield = 0;
 			int UIDToDrop = -2;
-			int animationSpeed = 0;
 			bool saveFailed = false;
 
 			// Name Validation
@@ -189,15 +190,11 @@ namespace CyubeBlockMaker
 			block.SimilarTo = SimliarTo_ComboBox.SelectedIndex+1;
 
 			// AnimationSpeed Validation
-			if (AnimationSpeed_TextBox.Text == string.Empty)
-			{
-				block.AnimationSpeed = animationSpeed;
-			}
-			else
+			if (AnimationSpeed_TextBox.Text != string.Empty)
 			{
 				try
 				{
-					animationSpeed = int.Parse(AnimationSpeed_TextBox.Text);
+					int animationSpeed = int.Parse(AnimationSpeed_TextBox.Text);
 					block.AnimationSpeed = animationSpeed;
 				}
 				catch
@@ -219,7 +216,17 @@ namespace CyubeBlockMaker
 				try
 				{
 					UIDToDrop = int.Parse(UniqueIDToDrop_TextBox.Text);
-					block.UniqueIDToDrop = UIDToDrop;
+					if(UIDToDrop > -2) 
+					{
+						saveFailed = true;
+						uniqueIDToDropInvalidFlag = true;
+						UniqueIDToDrop_TextBox.BorderBrush = Brushes.Red;
+						errorMessages.Add("Unique ID to Drop cannot be less than -2! Allowed values: -2 Itself, -1 Nothing, 0+ Custom block to drop.");
+					}
+					else
+					{
+						block.UniqueIDToDrop = UIDToDrop;
+					}
 				}
 				catch
 				{
@@ -232,7 +239,20 @@ namespace CyubeBlockMaker
 
 
 			// Recipe Validation
-			//TODO
+			if(recipe == null)
+			{
+				recipe = new BlockRecipe();
+				recipe.Array = Array.Empty<int>();
+				recipe.SizeZ = 0;
+				recipe.SizeY = 0;
+				recipe.SizeX = 0;
+				block.Recipe = recipe;
+			}
+			else
+			{
+				block.Recipe = recipe;
+			}
+
 			// Texture Validation
 			block.Textures = new TextureSettings();
 			block.Textures.Mode = TextureMode_ComboBox.SelectedIndex + 1;
@@ -264,7 +284,11 @@ namespace CyubeBlockMaker
 			}
 			else
 			{
-				// TODO Save the JSON to the provided path
+				SaveFileDialog saveFileDialog = new SaveFileDialog();
+				if(saveFileDialog.ShowDialog() == true)
+				{
+					JsonManager.WriteCustomBlockJson(saveFileDialog.FileName, block);
+				}
 			}
 		}
 		public void LoadCustomBlock(CustomBlock block)
@@ -279,6 +303,12 @@ namespace CyubeBlockMaker
 			AllowMove_Checkbox.IsChecked = block.AllowMove;
 			AllowCrystalPlace_Checkbox.IsChecked = block.AllowCrystalAssistedBlockPlacement;
 			if(block.CategoryName != null) Category_TextBox.Text = block.CategoryName;
+
+			recipe = block.Recipe;
+			
+			TextureMode_ComboBox.SelectedIndex = block.Textures.Mode - 1;
+			WithNormals_CheckBox.IsChecked = block.Textures.WithNormals;
+			WithGlowMaps_CheckBox.IsChecked = block.Textures.WithGlowMap;
 			//TODO Attempt to Load Textures, If Fail setup Texture Slots according to the Texture Mode
 		}
 
@@ -509,6 +539,25 @@ namespace CyubeBlockMaker
 		private void WithGlowMaps_CheckBox_Unchecked(object sender, RoutedEventArgs e)
 		{
 			RemoveAllPanelsOfType(TexturePanelType.Glow);
+		}
+
+		private void ImportRecipe_Click(object sender, RoutedEventArgs e)
+		{
+			OpenFileDialog openFileDialog = new OpenFileDialog();
+			openFileDialog.Filter = "Text File | *.txt";
+			openFileDialog.Title = "Select the exported cyube recipe.";
+			if(openFileDialog.ShowDialog() == true)
+			{
+				BlockRecipe br = JsonManager.ReadRecipe(openFileDialog.FileName);
+				if (br != null)
+				{
+					recipe = br;
+				}
+				else
+				{
+					MessageBox.Show("Failed to read the file! Please ensure the exported cyube recipe has not been modified in anyway!");
+				}
+			}
 		}
 	}
 }
