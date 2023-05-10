@@ -1,0 +1,19 @@
+﻿<UserControl x:Class="CyubeBlockMaker.TexturePanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:CyubeBlockMaker"
+             mc:Ignorable="d" 
+             d:DesignHeight="150" d:DesignWidth="110" Drop="Grid_Drop" MouseLeftButtonDown="Grid_MouseLeftButtonDown">
+	<Grid AllowDrop="True">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="5*"/>
+			<RowDefinition Height="1*"/>
+		</Grid.RowDefinitions>
+		<Rectangle Height="100" Stroke="Black" StrokeDashArray="3" Width="100" Grid.Row="0" Fill="#ebebeb" />
+		<Image Name="TexturePreview_Image" Source="NoPicture.png" Height="100" Width="100" Grid.Row="0"/>
+		<Label Name="TextureName_Label" Content="all.dds" HorizontalAlignment="Center" Grid.Row="1"/>
+		
+	</Grid>
+</UserControl>
