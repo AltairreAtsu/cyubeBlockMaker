@@ -16,6 +16,8 @@ using System.IO;
 using Microsoft.Win32;
 using Ookii.Dialogs.Wpf;
 using CyubeBlockMaker.File_Menu_Options;
+using Newtonsoft.Json.Bson;
+using System.Security.Cryptography;
 
 namespace CyubeBlockMaker
 {
@@ -32,6 +34,14 @@ namespace CyubeBlockMaker
 		private bool uniqueIDInvalidFlag = false;
 		private bool animationSpeedInvalidFlag = false;
 		private bool uniqueIDToDropInvalidFlag = false;
+		private bool categoryNameEmptyFlag = false;
+
+		private int uID;
+		private int yield;
+		private int animationSpeed;
+		private int UIDToDrop;
+		private bool glowMap;
+		private bool normalMap;
 
 		private List<TexturePanel> texturePanels = new List<TexturePanel>();
 		private BlockRecipe recipe;
@@ -83,150 +93,12 @@ namespace CyubeBlockMaker
 		}
 		public void Save()
 		{
-			List<string> errorMessages = new List<string>();
-			CustomBlock block = new CustomBlock();
-			int uID = 0;
-			int yield = 0;
-			int UIDToDrop = -2;
-			bool saveFailed = false;
+			ValidationResult result = ValidateData();
+			CustomBlock block = CompileBlock();
 
-			// Name Validation
-			if(Name_TextBox.Text == string.Empty)
+			if (!result.validationSucess)
 			{
-				Name_TextBox.BorderBrush = Brushes.Red;
-				nameInvalidFlag = true;
-				saveFailed = true;
-				errorMessages.Add("Name field cannot be empty!");
-			}
-			if (!nameInvalidFlag) block.Name = Name_TextBox.Text;
-
-			// CreatorName Validation
-			if(CreatorName_TextBox.Text == string.Empty)
-			{
-				CreatorName_TextBox.BorderBrush = Brushes.Red;
-				creatorNameInvalidFlag = true;
-				saveFailed = true;
-				errorMessages.Add("Creator Name field cannot be empty!");
-			}
-			if(!creatorNameInvalidFlag) block.CreatorName = CreatorName_TextBox.Text;
-			
-			// Category Validation
-			if(Category_TextBox.Text != string.Empty) block.CategoryName = Category_TextBox.Text;
-
-			// UniqueID Validation
-			if(UniqueID_Textbox.Text == string.Empty)
-			{
-				uniqueIDInvalidFlag = true;
-				saveFailed = true;
-				UniqueID_Textbox.BorderBrush = Brushes.Red;
-				errorMessages.Add("Unique ID field cannot be empty!");
-			}
-			else
-			{
-				try
-				{
-					uID = int.Parse(UniqueID_Textbox.Text);
-					if(uID < 1)
-					{
-						uniqueIDInvalidFlag = true;
-						saveFailed = true;
-						UniqueID_Textbox.BorderBrush = Brushes.Red;
-						errorMessages.Add("Unique ID cannot be equal to or less than 1!");
-					}
-				}
-				catch
-				{
-					uniqueIDInvalidFlag = true;
-					saveFailed = true;
-					UniqueID_Textbox.BorderBrush = Brushes.Red;
-					errorMessages.Add("Failed to Parse Unique ID. Please ensure only numeric characters are used. Do not leave any whitespace between the numbers.");
-				}
-			}
-			if (!uniqueIDInvalidFlag) block.UniqueID = uID;
-
-			// Yield Validation
-			block.Yield = (int)Math.Round(Yield_Slider.Value);
-
-			// SimilarTo Validation
-			block.SimilarTo = SimliarTo_ComboBox.SelectedIndex+1;
-
-			// AnimationSpeed Validation
-			block.AnimationSpeed = (int)Math.Round(AnimationSpeed_Slider.Value);
-
-			// UniqueIDToDrop Validation
-			if(UniqueIDToDrop_TextBox.Text == string.Empty)
-			{
-				block.UniqueIDToDrop = UIDToDrop;
-			}
-			else
-			{
-				try
-				{
-					UIDToDrop = int.Parse(UniqueIDToDrop_TextBox.Text);
-					if(UIDToDrop > -2) 
-					{
-						saveFailed = true;
-						uniqueIDToDropInvalidFlag = true;
-						UniqueIDToDrop_TextBox.BorderBrush = Brushes.Red;
-						errorMessages.Add("Unique ID to Drop cannot be less than -2! Allowed values: -2 Itself, -1 Nothing, 0+ Custom block to drop.");
-					}
-					else
-					{
-						block.UniqueIDToDrop = UIDToDrop;
-					}
-				}
-				catch
-				{
-					uniqueIDToDropInvalidFlag = true;
-					saveFailed = true;
-					UniqueIDToDrop_TextBox.BorderBrush = Brushes.Red;
-					errorMessages.Add("Failed to Parse Unique IDToDrop! Please ensure only numeric characters are used. Do not leave whitespace between the numbers.");
-				}
-			}
-
-
-			// Recipe Validation
-			if(recipe == null)
-			{
-				recipe = new BlockRecipe();
-				recipe.Array = Array.Empty<int>();
-				recipe.SizeZ = 0;
-				recipe.SizeY = 0;
-				recipe.SizeX = 0;
-				block.Recipe = recipe;
-			}
-			else
-			{
-				block.Recipe = recipe;
-			}
-
-			// Texture Validation
-			block.Textures = new TextureSettings();
-			block.Textures.Mode = TextureMode_ComboBox.SelectedIndex + 1;
-			if(WithNormals_CheckBox.IsChecked != null)
-			{
-				block.Textures.WithNormals = WithNormals_CheckBox.IsChecked.Value;
-			}
-			else
-			{
-				saveFailed = true;
-				errorMessages.Add("Failed to parse value of Texture Has Normals.");
-			}
-			
-			if(WithGlowMaps_CheckBox.IsChecked != null)
-			{
-				block.Textures.WithGlowMap = WithGlowMaps_CheckBox.IsChecked.Value;
-			}
-			else
-			{
-				saveFailed = true;
-				errorMessages.Add("Failed to parse value of Texture has Glow Maps.");
-			}
-
-			// Saving the Data
-			if (saveFailed)
-			{
-				string errorLog = String.Join('\n', errorMessages);
+				string errorLog = String.Join('\n', result.validationErrors);
 				MessageBox.Show(errorLog);
 			}
 			else
@@ -294,11 +166,203 @@ namespace CyubeBlockMaker
 		}
 		public void Export()
 		{
+			ValidationResult result = ValidateData();
+			CustomBlock block = CompileBlock();
+			if (!result.validationSucess)
+			{
+				string errorLog = String.Join('\n', result.validationErrors);
+				MessageBox.Show(errorLog);
+			}
+			else
+			{
+
+
+			}
+
 			// Build the Folder Structure in the target directory
 			// Export the Json
 			// Convert the images to DDS
 			// Save the DDS images to the Textures folder
 			// Notify user task complete
+		}
+		
+		private ValidationResult ValidateData()
+		{
+			bool validationSucess = true;
+			List<string> validationErrors = new List<string>();
+
+
+			if (!ValidateName(validationErrors)) validationSucess = false;
+			if (!ValidateCreatorName(validationErrors)) validationSucess = false;
+			ValidateCategoryName();
+			if (!ValidateUniqueID(validationErrors)) validationSucess = false;
+			ValidateYield();
+			ValidateAnimationSpeed();
+			if(!ValidateUniqueIDToDrop(validationErrors)) validationSucess = false;
+			ValidateRecipe();
+			if(!ValidateTextures(validationErrors)) validationSucess = false;
+
+			return new ValidationResult(validationSucess, validationErrors);
+
+		}
+		private bool ValidateName(List<string> validationErrors)
+		{
+			if (Name_TextBox.Text == string.Empty)
+			{
+				Name_TextBox.BorderBrush = Brushes.Red;
+				nameInvalidFlag = true;
+				validationErrors.Add("Name field cannot be empty!");
+				return false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+		private bool ValidateCreatorName(List<string> validationErrors)
+		{
+			if (CreatorName_TextBox.Text == string.Empty)
+			{
+				CreatorName_TextBox.BorderBrush = Brushes.Red;
+				creatorNameInvalidFlag = true;
+				validationErrors.Add("Creator Name field cannot be empty!");
+				return false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+		private void ValidateCategoryName()
+		{
+			categoryNameEmptyFlag = Category_TextBox.Text == string.Empty;
+		}
+		private bool ValidateUniqueID(List<string> validationErrors)
+		{
+			if (UniqueID_Textbox.Text == string.Empty)
+			{
+				uniqueIDInvalidFlag = true;
+				UniqueID_Textbox.BorderBrush = Brushes.Red;
+				validationErrors.Add("Unique ID field cannot be empty!");
+				return false;
+			}
+			else
+			{
+				try
+				{
+					uID = int.Parse(UniqueID_Textbox.Text);
+					if (uID < 1)
+					{
+						uniqueIDInvalidFlag = true;
+						UniqueID_Textbox.BorderBrush = Brushes.Red;
+						validationErrors.Add("Unique ID cannot be equal to or less than 1!");
+						return false;
+					}
+				}
+				catch
+				{
+					uniqueIDInvalidFlag = true;
+					UniqueID_Textbox.BorderBrush = Brushes.Red;
+					validationErrors.Add("Failed to Parse Unique ID. Please ensure only numeric characters are used. Do not leave any whitespace between the numbers.");
+					return false;
+				}
+			}
+			return true;
+		}
+		private void ValidateYield()
+		{
+			yield = (int)Math.Round(Yield_Slider.Value);
+		}
+		private void ValidateAnimationSpeed()
+		{
+			animationSpeed = (int)Math.Round(AnimationSpeed_Slider.Value);
+		}
+		private bool ValidateUniqueIDToDrop(List<string> validationErrors)
+		{
+			if (UniqueIDToDrop_TextBox.Text == string.Empty)
+			{
+				UIDToDrop = -2;
+				return true;
+			}
+			else
+			{
+				try
+				{
+					UIDToDrop = int.Parse(UniqueIDToDrop_TextBox.Text);
+					if (UIDToDrop > -2)
+					{
+						uniqueIDToDropInvalidFlag = true;
+						UniqueIDToDrop_TextBox.BorderBrush = Brushes.Red;
+						validationErrors.Add("Unique ID to Drop cannot be less than -2! Allowed values: -2 Itself, -1 Nothing, 0+ Custom block to drop.");
+						return false;
+					}
+					else
+					{
+						return true;
+					}
+				}
+				catch
+				{
+					uniqueIDToDropInvalidFlag = true;
+					UniqueIDToDrop_TextBox.BorderBrush = Brushes.Red;
+					validationErrors.Add("Failed to Parse Unique IDToDrop! Please ensure only numeric characters are used. Do not leave whitespace between the numbers.");
+					return false;
+				}
+			}
+		}
+		private void ValidateRecipe()
+		{
+			if (recipe == null)
+			{
+				recipe = new BlockRecipe();
+				recipe.Array = Array.Empty<int>();
+				recipe.SizeZ = 0;
+				recipe.SizeY = 0;
+				recipe.SizeX = 0;
+			}
+		}
+		private bool ValidateTextures(List<string> validationErrors)
+		{
+			if (WithNormals_CheckBox.IsChecked != null)
+			{
+				normalMap = WithNormals_CheckBox.IsChecked.Value;
+			}
+			else
+			{
+				validationErrors.Add("Failed to parse value of Texture Has Normals.");
+				return false;
+			}
+
+			if (WithGlowMaps_CheckBox.IsChecked != null)
+			{
+				glowMap = WithGlowMaps_CheckBox.IsChecked.Value;
+			}
+			else
+			{
+				validationErrors.Add("Failed to parse value of Texture has Glow Maps.");
+				return false;
+			}
+			return true;
+		}
+
+		private CustomBlock CompileBlock()
+		{
+			CustomBlock block = new CustomBlock();
+			if (!nameInvalidFlag) block.Name = Name_TextBox.Text;
+			if (!creatorNameInvalidFlag) block.CreatorName = CreatorName_TextBox.Text;
+			if (!categoryNameEmptyFlag) block.CategoryName = Category_TextBox.Text;
+			if (!uniqueIDInvalidFlag) block.UniqueID = uID;
+			block.Yield = yield;
+			block.SimilarTo = SimliarTo_ComboBox.SelectedIndex + 1;
+			block.AnimationSpeed = animationSpeed;
+			block.UniqueID = UIDToDrop;
+			block.Recipe = recipe;
+			block.Textures = new TextureSettings();
+			block.Textures.Mode = TextureMode_ComboBox.SelectedIndex + 1;
+			block.Textures.WithGlowMap = glowMap;
+			block.Textures.WithNormals = normalMap;
+
+			return block;
 		}
 
 		// Numeric Enforcement Event Handlers
@@ -563,5 +627,17 @@ namespace CyubeBlockMaker
 				}
 			}
 		}
+	}
+}
+
+public struct ValidationResult
+{
+	public List<string> validationErrors;
+	public bool validationSucess;
+
+	public ValidationResult(bool validationSucess, List<string> validationErrors)
+	{
+		this.validationErrors = validationErrors;
+		this.validationSucess = validationSucess;
 	}
 }
