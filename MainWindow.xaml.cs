@@ -726,6 +726,21 @@ namespace CyubeBlockMaker
 		{
 			RemoveAllPanelsOfType(TexturePanelType.Glow);
 		}
+
+		public void PopulateTexturePanels(List<string> images)
+		{
+			foreach (string image in images)
+			{
+				foreach(TexturePanel texturePanel in texturePanels)
+				{
+					if(System.IO.Path.GetFileNameWithoutExtension(image) == texturePanel.slotName)
+					{
+						texturePanel.TextureURI = new Uri(image);
+						texturePanel.TexturePreview_Image.Source = new BitmapImage(texturePanel.TextureURI);
+					}
+				}
+			}
+		}
 		
 		// Recipe Import
 		private void ImportRecipe_Click(object sender, RoutedEventArgs e)

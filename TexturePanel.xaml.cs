@@ -35,11 +35,22 @@ namespace CyubeBlockMaker
 			if (e.Data.GetDataPresent(DataFormats.FileDrop))
 			{
 				string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-
-				if (System.IO.Path.GetExtension(files[0]).Equals(".png"))
+				List<string> imageFiles = new List<string>();
+				for(int i = 0; i < files.Length; i++)
+				{
+					if (System.IO.Path.GetExtension(files[0]).Equals(".png"))
+					{
+						imageFiles.Add(files[i]);
+					}
+				}
+				if(imageFiles.Count == 1)
 				{
 					TextureURI = new Uri(files[0]);
 					TexturePreview_Image.Source = new BitmapImage(TextureURI);
+				}
+				else if(imageFiles.Count > 1)
+				{
+					MainWindow.mainWindow.PopulateTexturePanels(imageFiles);
 				}
 			}
 
