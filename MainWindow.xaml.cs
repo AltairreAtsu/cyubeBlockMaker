@@ -188,13 +188,26 @@ namespace CyubeBlockMaker
 
 					foreach (TexturePanel panel in texturePanels)
 					{
-						if (panel.textureType == TexturePanelType.Albedo || panel.textureType == TexturePanelType.Albedo_Small || panel.textureType == TexturePanelType.RecipePreview)
+						if (panel.textureType == TexturePanelType.Albedo || panel.textureType == TexturePanelType.Albedo_Small)
 						{
 							string imagePath = panel.TextureURI.LocalPath;
 
 							File.Copy(imagePath, imageTempPath, true);
 
 							string imageDestPath = textureDir + panel.slotName + ".dds";
+							var proc = System.Diagnostics.Process.Start(texTool, GetAlbedoExportCLIParams(imageTempPath, imageTempDest));
+							proc.WaitForExit();
+
+							File.Copy(imageTempDest, imageDestPath, true);
+						}
+						if(panel.textureType == TexturePanelType.RecipePreview)
+						{
+							string imagePath = panel.TextureURI.LocalPath;
+
+							File.Copy(imagePath, imageTempPath, true);
+
+							string imageDestPath = folderBrowserDialog.SelectedPath + "\\" + panel.slotName + ".dds";
+
 							var proc = System.Diagnostics.Process.Start(texTool, GetAlbedoExportCLIParams(imageTempPath, imageTempDest));
 							proc.WaitForExit();
 
