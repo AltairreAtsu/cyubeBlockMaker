@@ -5,17 +5,78 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CyubeBlockMaker"
         mc:Ignorable="d"
-        Title="MainWindow" Height="394" Width="800">
+        Title="Cyube Block Forge" Height="394" Width="800"
+		MinWidth="800" MinHeight="394">
 	<StackPanel>
 		<DockPanel LastChildFill="false" Background="LightGray">
-			<local:ControlMenuItem x:Name="File_MenuItem"  Content="File"/>
+			<Grid Name="NewBlockButton" Margin="10,0,0,0" MouseEnter="NewBlockButton_MouseEnter" MouseLeave="NewBlockButton_MouseLeave" MouseLeftButtonDown="NewBlockButton_MouseLeftButtonDown" MouseLeftButtonUp="NewBlockButton_MouseLeftButtonUp">
+				<Grid.RowDefinitions>
+					<RowDefinition/>
+					<RowDefinition/>
+				</Grid.RowDefinitions>
+				<Image Width="40" Height="40" Grid.Row="0">
+					<Image.Source>
+						<BitmapImage UriSource="/Images/NewFile.png"/>
+					</Image.Source>
+				</Image>
+				<Label Grid.Row="1" Content="New Block" HorizontalContentAlignment="Center"/>
+			</Grid>
+			<Grid Name="OpenBlockButton" MouseEnter="OpenBlockButton_MouseEnter" MouseLeave="OpenBlockButton_MouseLeave" MouseLeftButtonDown="OpenBlockButton_MouseLeftButtonDown" MouseLeftButtonUp="OpenBlockButton_MouseLeftButtonUp" >
+				<Grid.RowDefinitions>
+					<RowDefinition/>
+					<RowDefinition/>
+				</Grid.RowDefinitions>
+				<Image Width="40" Height="40" Grid.Row="0">
+					<Image.Source>
+						<BitmapImage UriSource="/Images/OpenFile.png"/>
+					</Image.Source>
+				</Image>
+				<Label Grid.Row="1" Content="Open Block" HorizontalContentAlignment="Center"/>
+			</Grid>
+			<Grid Name="SaveBlockButton" MouseEnter="SaveBlockButton_MouseEnter" MouseLeave="SaveBlockButton_MouseLeave" MouseLeftButtonDown="SaveBlockButton_MouseLeftButtonDown" MouseLeftButtonUp="SaveBlockButton_MouseLeftButtonUp">
+				<Grid.RowDefinitions>
+					<RowDefinition/>
+					<RowDefinition/>
+				</Grid.RowDefinitions>
+				<Image Width="40" Height="40" Grid.Row="0">
+					<Image.Source>
+						<BitmapImage UriSource="/Images/SaveFile.png"/>
+					</Image.Source>
+				</Image>
+				<Label Grid.Row="1" Content="Save Block" HorizontalContentAlignment="Center"/>
+			</Grid>
+			<Grid Name="SaveAsButton" MouseEnter="SaveAsButton_MouseEnter" MouseLeave="SaveAsButton_MouseLeave" MouseLeftButtonDown="SaveAsButton_MouseLeftButtonDown" MouseLeftButtonUp="SaveAsButton_MouseLeftButtonUp">
+				<Grid.RowDefinitions>
+					<RowDefinition/>
+					<RowDefinition/>
+				</Grid.RowDefinitions>
+				<Image Width="40" Height="40" Grid.Row="0">
+					<Image.Source>
+						<BitmapImage UriSource="/Images/SaveAsFile.png"/>
+					</Image.Source>
+				</Image>
+				<Label Grid.Row="1" Content="Save Block as" HorizontalContentAlignment="Center"/>
+			</Grid>
+			<Grid Name="ExportButton" MouseEnter="ExportButton_MouseEnter" MouseLeave="ExportButton_MouseLeave" MouseLeftButtonDown="ExportButton_MouseLeftButtonDown" MouseLeftButtonUp="ExportButton_MouseLeftButtonUp">
+				<Grid.RowDefinitions>
+					<RowDefinition/>
+					<RowDefinition/>
+				</Grid.RowDefinitions>
+				<Image Width="40" Height="40" Grid.Row="0">
+					<Image.Source>
+						<BitmapImage UriSource="/Images/Export.png"/>
+					</Image.Source>
+				</Image>
+				<Label Grid.Row="1" Content="Export" HorizontalContentAlignment="Center"/>
+			</Grid>
+
 		</DockPanel>
-		<TabControl>
+		<Border BorderBrush="DarkGray" BorderThickness="1"/>
+		<TabControl BorderBrush="Transparent">
 			<TabItem Header="Properties">
 				<StackPanel>
 					<Grid Margin="10">
 						<Grid.RowDefinitions>
-							<RowDefinition/>
 							<RowDefinition/>
 							<RowDefinition/>
 							<RowDefinition/>
@@ -31,7 +92,7 @@
 								<ColumnDefinition Width="2.7*"/>
 							</Grid.ColumnDefinitions>
 							<Label Content="Name" Grid.Column="0"/>
-							<TextBox Name="Name_TextBox" TextChanged="Name_TextBox_TextChanged"  TextWrapping="Wrap" Grid.Column="1"/>
+							<TextBox Name="Name_TextBox" ToolTip="Use this field to give your custom block a name." TextChanged="Name_TextBox_TextChanged"  TextWrapping="Wrap" Grid.Column="1"/>
 						</Grid>
 						<Grid Grid.Row="1" Grid.Column="0" >
 							<Grid.ColumnDefinitions>
@@ -39,7 +100,7 @@
 								<ColumnDefinition Width="2.7*"/>
 							</Grid.ColumnDefinitions>
 							<Label Content="Creator Name" Grid.Column="0"/>
-							<TextBox Name="CreatorName_TextBox" TextWrapping="Wrap" Grid.Column="1" TextChanged="CreatorName_TextBox_TextChanged"/>
+							<TextBox Name="CreatorName_TextBox" ToolTip="Use this field to credit yourself and anyone else who worked on your block." TextWrapping="Wrap" Grid.Column="1" TextChanged="CreatorName_TextBox_TextChanged"/>
 						</Grid>
 						<Grid Grid.Row="2" Grid.Column="0">
 							<Grid.ColumnDefinitions>
@@ -47,59 +108,78 @@
 								<ColumnDefinition Width="2.7*"/>
 							</Grid.ColumnDefinitions>
 							<Label Content="Yield" Grid.Column="0"/>
-							<Slider Name="Yield_Slider" Grid.Column="1" Minimum="0" Maximum="50" AutoToolTipPlacement="TopLeft" Interval="1" AutoToolTipPrecision="0" />
+							<Slider Name="Yield_Slider" ToolTip="Use this slider to specify how much of this block you get when you craft it." Grid.Column="1" Minimum="0" Maximum="50" AutoToolTipPlacement="TopLeft" Interval="1" AutoToolTipPrecision="0" />
 						</Grid>
-						<Grid Grid.Row="3" Grid.Column="0">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="1*"/>
-								<ColumnDefinition Width="2.7*"/>
-							</Grid.ColumnDefinitions>
-							<Label Content="Animation Speed" Grid.Column="0"/>
-							<Slider Name="AnimationSpeed_Slider" Grid.Column="1" Minimum="0" Maximum="255" AutoToolTipPlacement="TopLeft" Interval="1" AutoToolTipPrecision="0"/>
-						</Grid>
+
 						<Grid Grid.Row="0" Grid.Column="1">
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="1*"/>
 								<ColumnDefinition Width="2.7*"/>
 							</Grid.ColumnDefinitions>
-							<Label Content="Category" Grid.Column="0"/>
-							<TextBox Name="Category_TextBox" TextWrapping="Wrap" Grid.Column="1"/>
+							<Label Content="Unique ID" Grid.Column="0"/>
+							<TextBox Name="UniqueID_Textbox" ToolTip="Use this field to specify the internal ID number for this block. No two blocks can share an ID." PreviewTextInput="UniqueID_Textbox_PreviewTextInput" TextWrapping="Wrap" Grid.Column="1" TextChanged="UniqueID_Textbox_TextChanged"/>
 						</Grid>
 						<Grid Grid.Row="1" Grid.Column="1">
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="1*"/>
 								<ColumnDefinition Width="2.7*"/>
 							</Grid.ColumnDefinitions>
-							<Label Content="Unique ID" Grid.Column="0"/>
-							<TextBox Name="UniqueID_Textbox" PreviewTextInput="UniqueID_Textbox_PreviewTextInput" TextWrapping="Wrap" Grid.Column="1" TextChanged="UniqueID_Textbox_TextChanged"/>
-						</Grid>
-						<Grid Grid.Row="2" Grid.Column="1">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="1*"/>
-								<ColumnDefinition Width="2.7*"/>
-							</Grid.ColumnDefinitions>
-							<Label Content="Similar To" Grid.Column="0"/>
-							<ComboBox Name="SimliarTo_ComboBox" Grid.Column="1">
-								<ComboBoxItem Content="Stone" IsSelected="True"/>
-								<ComboBoxItem Content="Wood"/>
-								<ComboBoxItem Content="Dirt"/>
+							<Label Content="Digging Tool" Grid.Column="0"/>
+							<ComboBox Name="SimliarTo_ComboBox" ToolTip="Use this field to choose what tool is used to break your block. Use Indestrucible if you don't want the block to be breakable." Grid.Column="1">
+								<ComboBoxItem Content="Pickaxe" IsSelected="True"/>
+								<ComboBoxItem Content="Axe"/>
+								<ComboBoxItem Content="Shovel"/>
 								<ComboBoxItem Content="Indestructible"/>
 							</ComboBox>
 						</Grid>
-						<Grid Grid.Row="3" Grid.Column="1">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="1*"/>
-								<ColumnDefinition Width="2.7*"/>
-							</Grid.ColumnDefinitions>
-							<Label Content="UniqueIDToDrop" Grid.Column="0"/>
-							<TextBox Name="UniqueIDToDrop_TextBox" Grid.Column="1" PreviewTextInput="UniqueIDToDrop_TextBox_PreviewTextInput" TextChanged="UniqueIDToDrop_TextBox_TextChanged"/>
-						</Grid>
 					</Grid>
-					<DockPanel LastChildFill="false" Margin="10">
-						<CheckBox Name="AllowMove_Checkbox" Content="Allow Move" IsChecked="True" VerticalAlignment="Center"/>
-						<CheckBox Name="AllowCrystalPlace_Checkbox" Content="Allow Crystal Place" IsChecked="True" VerticalAlignment="Center"/>
-						<Button Content="Import recipe from file" Click="ImportRecipe_Click" Margin="10,0" VerticalAlignment="Center" AllowDrop="True" Drop="Button_Drop"/>
-					</DockPanel>
+					<Button Content="Import recipe from file" ToolTip="If you exported a crafting Recipe you can load that recipe into your block with this button. Just navigate to where you saved the file &#x0a; ([%localappdata%]/cyubeVR/Saved/Dev/Recipe.txt by default) and load the file. Hint you can also drag the file onto this button!" Click="ImportRecipe_Click" Margin="320,0" VerticalAlignment="Center" AllowDrop="True" Drop="Button_Drop"/>
+					<Expander Header="Optional Settings">
+						<Grid>
+							<Grid.RowDefinitions>
+								<RowDefinition/>
+								<RowDefinition/>
+							</Grid.RowDefinitions>
+							<Grid Grid.Row="0">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition/>
+									<ColumnDefinition/>
+								</Grid.ColumnDefinitions>
+								<Grid.RowDefinitions>
+									<RowDefinition/>
+									<RowDefinition/>
+								</Grid.RowDefinitions>
+								<Grid Grid.Row="0" Grid.Column="0">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="1*"/>
+										<ColumnDefinition Width="2.7*"/>
+									</Grid.ColumnDefinitions>
+									<Label Content="Category" Grid.Column="0"/>
+									<TextBox Name="Category_TextBox" ToolTip="Use this field to specify a category for the block to be placed into in the crafting menu." TextWrapping="Wrap" Grid.Column="1"/>
+								</Grid>
+								<Grid Grid.Row="0" Grid.Column="1">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="1*"/>
+										<ColumnDefinition Width="2.7*"/>
+									</Grid.ColumnDefinitions>
+									<Label Content="UniqueIDToDrop" Grid.Column="0"/>
+									<TextBox Name="UniqueIDToDrop_TextBox" ToolTip="Use this field to specify the id of another customblock for your block to drop when destroyed. &#x0a; You can also enter -1 here to make your block drop nothing. Just leave this blank if you want the block to drop itself." Grid.Column="1" PreviewTextInput="UniqueIDToDrop_TextBox_PreviewTextInput" TextChanged="UniqueIDToDrop_TextBox_TextChanged"/>
+								</Grid>
+								<Grid Grid.Row="1" Grid.Column="0">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="1*"/>
+										<ColumnDefinition Width="2.7*"/>
+									</Grid.ColumnDefinitions>
+									<Label Content="Animation Speed" Grid.Column="0"/>
+									<Slider Name="AnimationSpeed_Slider" ToolTip="You can use this slider to specify the speed at which your block animates if it can." Grid.Column="1" Minimum="0" Maximum="255" AutoToolTipPlacement="TopLeft" Interval="1" AutoToolTipPrecision="0"/>
+								</Grid>
+							</Grid>
+							<DockPanel LastChildFill="false" Margin="10" Grid.Row="1">
+								<CheckBox Name="AllowMove_Checkbox" ToolTip="This Checkbox determines if your block is allowed to be drag moved around after it's been placed." Content="Allow Move" IsChecked="True" VerticalAlignment="Center"/>
+								<CheckBox Name="AllowCrystalPlace_Checkbox" ToolTip="This Checkbox determines if you can place multiple blocks at once with cyrstal assisted placement." Content="Allow Crystal Place" IsChecked="True" VerticalAlignment="Center"/>
+							</DockPanel>
+						</Grid>
+					</Expander>
 				</StackPanel>
 			</TabItem>
 			<TabItem Header="Textures">

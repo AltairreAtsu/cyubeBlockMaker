@@ -15,7 +15,6 @@ using System.Windows.Shapes;
 using System.IO;
 using Microsoft.Win32;
 using Ookii.Dialogs.Wpf;
-using CyubeBlockMaker.File_Menu_Options;
 using Newtonsoft.Json.Bson;
 using System.Security.Cryptography;
 
@@ -27,21 +26,23 @@ namespace CyubeBlockMaker
 	public partial class MainWindow : Window
 	{
 		public static MainWindow mainWindow;
-		
+
+		private Brush defaultButtonBackground = null;
+		private Brush mouseOverButtonBackground = Brushes.Lavender;
+		private Brush mouseDownButtonBackground = Brushes.AliceBlue;
+
 		// State Flags
 		private bool nameInvalidFlag = false;
 		private bool creatorNameInvalidFlag = false;
 		private bool uniqueIDInvalidFlag = false;
-		private bool animationSpeedInvalidFlag = false;
 		private bool uniqueIDToDropInvalidFlag = false;
-		private bool categoryNameEmptyFlag = false;
 
 		private int uID;
-		private int yield;
-		private int animationSpeed;
 		private int UIDToDrop;
 		private bool glowMap;
 		private bool normalMap;
+
+		private string saveDestination = "";
 
 		private List<TexturePanel> texturePanels = new List<TexturePanel>();
 		private BlockRecipe recipe;
@@ -50,20 +51,7 @@ namespace CyubeBlockMaker
 		{
 			InitializeComponent();
 			mainWindow = this;
-
-			InitializeFileMenu();
 			InitializeTextureTab();
-		}
-
-		private void InitializeFileMenu()
-		{
-			List<IControlMenuOption> fileMenuOptions = new List<IControlMenuOption>();
-			fileMenuOptions.Add(new NewFileOption());
-			fileMenuOptions.Add(new OpenFileOption());
-			fileMenuOptions.Add(new SaveFileOption());
-			fileMenuOptions.Add(new SaveAsOption());
-			fileMenuOptions.Add(new ExportFileOption());
-			File_MenuItem.InitializeOptions(fileMenuOptions);
 		}
 
 		private void InitializeTextureTab()
@@ -88,34 +76,77 @@ namespace CyubeBlockMaker
 			WithGlowMaps_CheckBox.IsChecked = false;
 			TextureMode_ComboBox.SelectedIndex = 0;
 			TextureTabWrapPanel.Children.Clear();
-			// TODO Prep Texture Wrap according to the selected mode
-			
+			TextureMode_ComboBox_SelectionChanged(null, null);
 		}
-		public void Save()
+		public void Save(bool forceDialog)
 		{
+			ValidationResult result = ValidateSaveData();
+			if (!result.validationSucess)
+			{
+				string errorLog = String.Join('\n', result.validationErrors);
+				MessageBox.Show(errorLog);
+				return;
+			}
+
 			CustomBlock block = CompileBlock();
+			if(saveDestination != String.Empty && !forceDialog)
+			{
+				WriteData(saveDestination, block);
+				return;
+			}
 
 			VistaFolderBrowserDialog folderBrowserDialog = new VistaFolderBrowserDialog();
-				
 			if(folderBrowserDialog.ShowDialog() == true)
 			{
-				JsonManager.WriteCustomBlockJson(folderBrowserDialog.SelectedPath + System.IO.Path.DirectorySeparatorChar + block.Name + ".block", block);
+				WriteData(folderBrowserDialog.SelectedPath, block);
+			}
+		}
+		private void WriteData(string path, CustomBlock block)
+		{
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
 
-				string textureDir = folderBrowserDialog.SelectedPath + System.IO.Path.DirectorySeparatorChar + "Textures";
-				Directory.CreateDirectory(textureDir);
-				textureDir = textureDir + System.IO.Path.DirectorySeparatorChar;
-				foreach(TexturePanel texturePanel in texturePanels)
+			JsonManager.WriteCustomBlockJson(path + System.IO.Path.DirectorySeparatorChar + block.Name + ".block", block);
+
+			string textureDir = path + System.IO.Path.DirectorySeparatorChar + "Textures";
+			Directory.CreateDirectory(textureDir);
+			textureDir = textureDir + System.IO.Path.DirectorySeparatorChar;
+			foreach (TexturePanel texturePanel in texturePanels)
+			{
+				if (texturePanel.TextureURI != null)
 				{
-					if(texturePanel.TextureURI != null)
-					{
-							
-						File.Copy(texturePanel.TextureURI.LocalPath, textureDir + texturePanel.slotName + ".png");
-					}
+					string sourcePath = texturePanel.TextureURI.LocalPath;
+					string destPath = textureDir + texturePanel.slotName + ".png";
+					if (sourcePath != destPath)
+						File.Copy(sourcePath, destPath, true);
 				}
 			}
 		}
-		public void LoadCustomBlock(CustomBlock block, string path)
+		public void OpenBlock()
 		{
+			OpenFileDialog openFileDialog = new OpenFileDialog();
+			openFileDialog.Filter = "Block | *.block";
+			openFileDialog.Multiselect = false;
+			openFileDialog.Title = "Select a Block to open.";
+			CustomBlock block;
+			string path;
+
+			if(openFileDialog.ShowDialog() == true)
+			{
+				block = JsonManager.ReadJson(openFileDialog.FileName);
+				path = openFileDialog.FileName;
+				if (block == null)
+				{
+					MessageBox.Show("Failed to Parse block JSON. File data may not be formated correctly.");
+					return;
+				}
+			}
+			else
+			{
+				return;
+			}
+			saveDestination = System.IO.Path.GetDirectoryName(path);
+
 			Name_TextBox.Text = block.Name;
 			CreatorName_TextBox.Text = block.CreatorName;
 
@@ -157,7 +188,7 @@ namespace CyubeBlockMaker
 		}
 		public void Export()
 		{
-			ValidationResult result = ValidateData();
+			ValidationResult result = ValidateExportData();
 			CustomBlock block = CompileBlock();
 
 			if (!result.validationSucess)
@@ -243,7 +274,7 @@ namespace CyubeBlockMaker
 				}
 				else
 				{
-					MessageBox.Show("Critical Error: Could not locate PVRTexTool installation corrupted. Please re-install.");
+					MessageBox.Show("Critical Error! Could not locate PVRTexTool, your is installation corrupted. Please re-install the application.");
 					return;
 				}
 				
@@ -252,7 +283,7 @@ namespace CyubeBlockMaker
 
 		}
 		
-		private ValidationResult ValidateData()
+		private ValidationResult ValidateExportData()
 		{
 			bool validationSucess = true;
 			List<string> validationErrors = new List<string>();
@@ -260,10 +291,7 @@ namespace CyubeBlockMaker
 
 			if (!ValidateName(validationErrors)) validationSucess = false;
 			if (!ValidateCreatorName(validationErrors)) validationSucess = false;
-			ValidateCategoryName();
 			if (!ValidateUniqueID(validationErrors)) validationSucess = false;
-			ValidateYield();
-			ValidateAnimationSpeed();
 			if(!ValidateUniqueIDToDrop(validationErrors)) validationSucess = false;
 			ValidateRecipe();
 			if(!ValidateTextures(validationErrors)) validationSucess = false;
@@ -272,6 +300,19 @@ namespace CyubeBlockMaker
 			return new ValidationResult(validationSucess, validationErrors);
 
 		}
+		private ValidationResult ValidateSaveData()
+		{
+			bool validationSucess = true;
+			List<string> validationErrors = new List<string>();
+			
+			if(!PreValidateUniqueID(validationErrors)) validationSucess = false;
+			if(!PreValidateUniqueIDToDrop(validationErrors)) validationSucess = false;
+			ValidateRecipe();
+			if(!ValidateTextures(validationErrors)) validationSucess = false;
+
+			return new ValidationResult(validationSucess, validationErrors);
+		}
+
 		private bool ValidateName(List<string> validationErrors)
 		{
 			if (Name_TextBox.Text == string.Empty)
@@ -299,10 +340,6 @@ namespace CyubeBlockMaker
 			{
 				return true;
 			}
-		}
-		private void ValidateCategoryName()
-		{
-			categoryNameEmptyFlag = Category_TextBox.Text == string.Empty;
 		}
 		private bool ValidateUniqueID(List<string> validationErrors)
 		{
@@ -336,13 +373,21 @@ namespace CyubeBlockMaker
 			}
 			return true;
 		}
-		private void ValidateYield()
+		private bool PreValidateUniqueID(List<string> validationErrors)
 		{
-			yield = (int)Math.Round(Yield_Slider.Value);
-		}
-		private void ValidateAnimationSpeed()
-		{
-			animationSpeed = (int)Math.Round(AnimationSpeed_Slider.Value);
+			if (UniqueID_Textbox.Text == string.Empty) return true;
+			try
+			{
+				uID = int.Parse(UniqueID_Textbox.Text);
+				return true;
+			}
+			catch
+			{
+				uniqueIDInvalidFlag = true;
+				UniqueID_Textbox.BorderBrush = Brushes.Red;
+				validationErrors.Add("Failed to Parse Unique ID. Please ensure only numeric characters are used. Do not leave any whitespace between the numbers.");
+				return false;
+			}
 		}
 		private bool ValidateUniqueIDToDrop(List<string> validationErrors)
 		{
@@ -375,6 +420,22 @@ namespace CyubeBlockMaker
 					validationErrors.Add("Failed to Parse Unique IDToDrop! Please ensure only numeric characters are used. Do not leave whitespace between the numbers.");
 					return false;
 				}
+			}
+		}
+		private bool PreValidateUniqueIDToDrop(List<string> validationErrors)
+		{
+			if (UniqueIDToDrop_TextBox.Text == string.Empty) return true;
+			try
+			{
+				UIDToDrop = int.Parse(UniqueIDToDrop_TextBox.Text);
+				return true;
+			}
+			catch
+			{
+				uniqueIDToDropInvalidFlag = true;
+				UniqueIDToDrop_TextBox.BorderBrush = Brushes.Red;
+				validationErrors.Add("Failed to Parse Unique IDToDrop! Please ensure only numeric characters are used. Do not leave whitespace between the numbers.");
+				return false;
 			}
 		}
 		private void ValidateRecipe()
@@ -427,14 +488,14 @@ namespace CyubeBlockMaker
 		private CustomBlock CompileBlock()
 		{
 			CustomBlock block = new CustomBlock();
-			if (!nameInvalidFlag) block.Name = Name_TextBox.Text;
-			if (!creatorNameInvalidFlag) block.CreatorName = CreatorName_TextBox.Text;
-			if (!categoryNameEmptyFlag) block.CategoryName = Category_TextBox.Text;
-			if (!uniqueIDInvalidFlag) block.UniqueID = uID;
-			block.Yield = yield;
+			block.Name = Name_TextBox.Text;
+			block.CreatorName = CreatorName_TextBox.Text;
+			block.CategoryName = Category_TextBox.Text;
+			block.UniqueID = uID;
+			block.Yield = (int)Math.Round(Yield_Slider.Value);
 			block.SimilarTo = SimliarTo_ComboBox.SelectedIndex + 1;
-			block.AnimationSpeed = animationSpeed;
-			block.UniqueID = UIDToDrop;
+			block.AnimationSpeed = (int)Math.Round(AnimationSpeed_Slider.Value);
+			block.UniqueIDToDrop = UIDToDrop;
 			block.Recipe = recipe;
 			block.Textures = new TextureSettings();
 			block.Textures.Mode = TextureMode_ComboBox.SelectedIndex + 1;
@@ -710,15 +771,110 @@ namespace CyubeBlockMaker
 
 		private string GetAlbedoExportCLIParams(string sourceImagePath, string targetImagePath)
 		{
-			return "-i " + sourceImagePath + " -o " + targetImagePath + " -nout -m 9 -f BC3,UBN,sRGB -q pvrtcbest";
+			return "-i " + sourceImagePath + " -o " + targetImagePath + " -nout -m -f BC3,UBN,sRGB -q pvrtcbest";
 		}
 		private string GetNormalExportCLIParams(string sourceImagePath, string targetImagePath)
 		{
-			return "-i " + sourceImagePath + " -o " + targetImagePath + " -nout -m 9 -f BC5,UBN,sRGB -q pvrtcbest";
+			return "-i " + sourceImagePath + " -o " + targetImagePath + " -nout -m -f BC5,UBN,sRGB -q pvrtcbest";
 		}
 		private string GetGlowExportCLIParams(string sourceImagePath, string targetImagePath)
 		{
-			return "-i " + sourceImagePath + " -o " + targetImagePath + " -nout -m 9 -f BC1,UBN,sRGB -q pvrtcbest";
+			return "-i " + sourceImagePath + " -o " + targetImagePath + " -nout -m -f BC1,UBN,sRGB -q pvrtcbest";
+		}
+
+		// New Block Button Handling
+		private void NewBlockButton_MouseEnter(object sender, MouseEventArgs e)
+		{
+			NewBlockButton.Background = mouseOverButtonBackground;
+		}
+		private void NewBlockButton_MouseLeave(object sender, MouseEventArgs e)
+		{
+			NewBlockButton.Background = defaultButtonBackground;
+		}
+		private void NewBlockButton_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+		{
+			ResetWindow();
+			NewBlockButton.Background = mouseDownButtonBackground;
+		}
+		private void NewBlockButton_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+		{
+			NewBlockButton.Background = mouseOverButtonBackground;
+		}
+
+		// Open Block Button Hnadling
+		private void OpenBlockButton_MouseEnter(object sender, MouseEventArgs e)
+		{
+			OpenBlockButton.Background = mouseOverButtonBackground;
+		}
+		private void OpenBlockButton_MouseLeave(object sender, MouseEventArgs e)
+		{
+			OpenBlockButton.Background = defaultButtonBackground;
+		}
+		private void OpenBlockButton_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+		{
+			OpenBlockButton.Background = mouseDownButtonBackground;
+			OpenBlock();
+		}
+		private void OpenBlockButton_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+		{
+			OpenBlockButton.Background = mouseOverButtonBackground;
+		}
+
+		// Save Block Button Handling
+		private void SaveBlockButton_MouseEnter(object sender, MouseEventArgs e)
+		{
+			SaveBlockButton.Background = mouseOverButtonBackground;
+		}
+		private void SaveBlockButton_MouseLeave(object sender, MouseEventArgs e)
+		{
+			SaveBlockButton.Background = defaultButtonBackground;
+		}
+		private void SaveBlockButton_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+		{
+			SaveBlockButton.Background = mouseDownButtonBackground;
+			Save(false);
+		}
+		private void SaveBlockButton_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+		{
+			SaveBlockButton.Background = mouseOverButtonBackground;
+		}
+
+		// Save Block As Button Handling
+		private void SaveAsButton_MouseEnter(object sender, MouseEventArgs e)
+		{
+			SaveAsButton.Background = mouseOverButtonBackground;
+		}
+		private void SaveAsButton_MouseLeave(object sender, MouseEventArgs e)
+		{
+			SaveAsButton.Background= defaultButtonBackground;
+		}
+		private void SaveAsButton_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+		{
+			SaveAsButton.Background = mouseDownButtonBackground;
+			Save(true);
+		}
+		private void SaveAsButton_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+		{
+			SaveAsButton.Background=(mouseOverButtonBackground);
+		}
+		
+		// Export Block Button Handling
+		private void ExportButton_MouseEnter(object sender, MouseEventArgs e)
+		{
+			ExportButton.Background = mouseOverButtonBackground;
+		}
+		private void ExportButton_MouseLeave(object sender, MouseEventArgs e)
+		{
+			ExportButton.Background = defaultButtonBackground;
+		}
+		private void ExportButton_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+		{
+			ExportButton.Background = mouseDownButtonBackground;
+			Export();
+		}
+		private void ExportButton_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+		{
+			ExportButton.Background = mouseOverButtonBackground;
 		}
 	}
 }

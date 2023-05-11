@@ -8,8 +8,24 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\Export.png" />
+    <None Remove="Images\NewFile.png" />
+    <None Remove="Images\OpenFile.png" />
+    <None Remove="Images\SaveAsFile.png" />
+    <None Remove="Images\SaveFile.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Images\Export.png" />
+    <Resource Include="Images\NewFile.png" />
+    <Resource Include="Images\OpenFile.png" />
+    <Resource Include="Images\SaveFile.png" />
+    <Resource Include="Images\SaveAsFile.png" />
   </ItemGroup>
 
 </Project>
