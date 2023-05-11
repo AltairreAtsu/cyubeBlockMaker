@@ -93,32 +93,23 @@ namespace CyubeBlockMaker
 		}
 		public void Save()
 		{
-			ValidationResult result = ValidateData();
 			CustomBlock block = CompileBlock();
 
-			if (!result.validationSucess)
-			{
-				string errorLog = String.Join('\n', result.validationErrors);
-				MessageBox.Show(errorLog);
-			}
-			else
-			{
-				VistaFolderBrowserDialog folderBrowserDialog = new VistaFolderBrowserDialog();
+			VistaFolderBrowserDialog folderBrowserDialog = new VistaFolderBrowserDialog();
 				
-				if(folderBrowserDialog.ShowDialog() == true)
-				{
-					JsonManager.WriteCustomBlockJson(folderBrowserDialog.SelectedPath + System.IO.Path.DirectorySeparatorChar + block.Name + ".block", block);
+			if(folderBrowserDialog.ShowDialog() == true)
+			{
+				JsonManager.WriteCustomBlockJson(folderBrowserDialog.SelectedPath + System.IO.Path.DirectorySeparatorChar + block.Name + ".block", block);
 
-					string textureDir = folderBrowserDialog.SelectedPath + System.IO.Path.DirectorySeparatorChar + "Textures";
-					Directory.CreateDirectory(textureDir);
-					textureDir = textureDir + System.IO.Path.DirectorySeparatorChar;
-					foreach(TexturePanel texturePanel in texturePanels)
+				string textureDir = folderBrowserDialog.SelectedPath + System.IO.Path.DirectorySeparatorChar + "Textures";
+				Directory.CreateDirectory(textureDir);
+				textureDir = textureDir + System.IO.Path.DirectorySeparatorChar;
+				foreach(TexturePanel texturePanel in texturePanels)
+				{
+					if(texturePanel.TextureURI != null)
 					{
-						if(texturePanel.TextureURI != null)
-						{
 							
-							File.Copy(texturePanel.TextureURI.LocalPath, textureDir + texturePanel.slotName + ".png");
-						}
+						File.Copy(texturePanel.TextureURI.LocalPath, textureDir + texturePanel.slotName + ".png");
 					}
 				}
 			}
@@ -168,22 +159,84 @@ namespace CyubeBlockMaker
 		{
 			ValidationResult result = ValidateData();
 			CustomBlock block = CompileBlock();
+
 			if (!result.validationSucess)
 			{
 				string errorLog = String.Join('\n', result.validationErrors);
 				MessageBox.Show(errorLog);
+				return;
 			}
-			else
+
+			VistaFolderBrowserDialog folderBrowserDialog = new VistaFolderBrowserDialog();
+			if (folderBrowserDialog.ShowDialog() == true)
 			{
+				JsonManager.WriteCustomBlockJson(folderBrowserDialog.SelectedPath + System.IO.Path.DirectorySeparatorChar + "Properties.json", block);
 
+				string textureDir = folderBrowserDialog.SelectedPath + System.IO.Path.DirectorySeparatorChar + "Textures";
+				Directory.CreateDirectory(textureDir);
+				textureDir = textureDir + System.IO.Path.DirectorySeparatorChar;
 
+				string strExeFilePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+				string exeDir = System.IO.Path.GetDirectoryName(strExeFilePath);
+				string texTool = exeDir + System.IO.Path.DirectorySeparatorChar + "PVRTexToolCLI.exe";
+
+				if (File.Exists(texTool))
+				{
+					string imageTempPath = exeDir + "\\temp\\" + "temp.png";
+					string imageTempDest = exeDir + "\\temp\\" + "temp.dds";
+					if (!Directory.Exists(exeDir + "\\temp")) Directory.CreateDirectory(exeDir + "\\temp");
+
+					foreach (TexturePanel panel in texturePanels)
+					{
+						if (panel.textureType == TexturePanelType.Albedo || panel.textureType == TexturePanelType.Albedo_Small || panel.textureType == TexturePanelType.RecipePreview)
+						{
+							string imagePath = panel.TextureURI.LocalPath;
+
+							File.Copy(imagePath, imageTempPath, true);
+
+							string imageDestPath = textureDir + panel.slotName + ".dds";
+							var proc = System.Diagnostics.Process.Start(texTool, GetAlbedoExportCLIParams(imageTempPath, imageTempDest));
+							proc.WaitForExit();
+
+							File.Copy(imageTempDest, imageDestPath, true);
+						}
+						if (panel.textureType == TexturePanelType.Normal)
+						{
+							string imagePath = panel.TextureURI.LocalPath;
+
+							File.Copy(imagePath, imageTempPath, true);
+
+							string imageDestPath = textureDir + panel.slotName + ".dds";
+							var proc = System.Diagnostics.Process.Start(texTool, GetNormalExportCLIParams(imageTempPath, imageTempDest));
+							proc.WaitForExit();
+
+							File.Copy(imageTempDest, imageDestPath, true);
+						}
+						if (panel.textureType == TexturePanelType.Glow)
+						{
+							string imagePath = panel.TextureURI.LocalPath;
+
+							File.Copy(imagePath, imageTempPath, true);
+
+							string imageDestPath = textureDir + panel.slotName + ".dds";
+							var proc = System.Diagnostics.Process.Start(texTool, GetGlowExportCLIParams(imageTempPath, imageTempDest));
+							proc.WaitForExit();
+
+							File.Copy(imageTempDest, imageDestPath, true);
+						}
+					}
+					File.Delete(imageTempPath);
+					File.Delete(imageTempDest);
+				}
+				else
+				{
+					MessageBox.Show("Critical Error: Could not locate PVRTexTool installation corrupted. Please re-install.");
+					return;
+				}
+				
+				MessageBox.Show("Export Complete");
 			}
 
-			// Build the Folder Structure in the target directory
-			// Export the Json
-			// Convert the images to DDS
-			// Save the DDS images to the Textures folder
-			// Notify user task complete
 		}
 		
 		private ValidationResult ValidateData()
@@ -201,6 +254,7 @@ namespace CyubeBlockMaker
 			if(!ValidateUniqueIDToDrop(validationErrors)) validationSucess = false;
 			ValidateRecipe();
 			if(!ValidateTextures(validationErrors)) validationSucess = false;
+			if(!ValidateTexturePanels(validationErrors)) validationSucess = false;
 
 			return new ValidationResult(validationSucess, validationErrors);
 
@@ -341,6 +395,18 @@ namespace CyubeBlockMaker
 			{
 				validationErrors.Add("Failed to parse value of Texture has Glow Maps.");
 				return false;
+			}
+			return true;
+		}
+		private bool ValidateTexturePanels(List<string> validationErrors)
+		{
+			foreach (var panel in texturePanels)
+			{
+				if(panel.TextureURI == null)
+				{
+					validationErrors.Add("All Texture Slots must be filled before exporting!");
+					return false;
+				}
 			}
 			return true;
 		}
@@ -626,6 +692,20 @@ namespace CyubeBlockMaker
 					}
 				}
 			}
+		}
+	
+
+		private string GetAlbedoExportCLIParams(string sourceImagePath, string targetImagePath)
+		{
+			return "-i " + sourceImagePath + " -o " + targetImagePath + " -nout -m 9 -f BC3,UBN,sRGB -q pvrtcbest";
+		}
+		private string GetNormalExportCLIParams(string sourceImagePath, string targetImagePath)
+		{
+			return "-i " + sourceImagePath + " -o " + targetImagePath + " -nout -m 9 -f BC5,UBN,sRGB -q pvrtcbest";
+		}
+		private string GetGlowExportCLIParams(string sourceImagePath, string targetImagePath)
+		{
+			return "-i " + sourceImagePath + " -o " + targetImagePath + " -nout -m 9 -f BC1,UBN,sRGB -q pvrtcbest";
 		}
 	}
 }
