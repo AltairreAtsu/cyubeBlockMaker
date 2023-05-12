@@ -31,7 +31,7 @@ namespace CyubeBlockMaker
 		public TexturePanelType textureType = TexturePanelType.Albedo;
 		public string slotName;
 
-		private bool imageSizeInvalidFlag = false;
+		public bool imageSizeInvalidFlag = false;
 		
 		public TexturePanel()
 		{

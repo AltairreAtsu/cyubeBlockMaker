@@ -481,6 +481,11 @@ namespace CyubeBlockMaker
 					validationErrors.Add("All Texture Slots must be filled before exporting!");
 					return false;
 				}
+				if(panel.imageSizeInvalidFlag == true)
+				{
+					validationErrors.Add("All Textures must be the correct size before exporting!");
+					return false;
+				}
 			}
 			return true;
 		}
