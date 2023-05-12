@@ -307,7 +307,7 @@ namespace CyubeBlockMaker
 			if (!ValidateCreatorName(validationErrors)) validationSucess = false;
 			if (!ValidateUniqueID(validationErrors)) validationSucess = false;
 			if(!ValidateUniqueIDToDrop(validationErrors)) validationSucess = false;
-			ValidateRecipe();
+			if(!ValidateRecipe(validationErrors, true)) validationSucess = false;
 			if(!ValidateTextures(validationErrors)) validationSucess = false;
 			if(!ValidateTexturePanels(validationErrors)) validationSucess = false;
 
@@ -321,7 +321,7 @@ namespace CyubeBlockMaker
 			
 			if(!PreValidateUniqueID(validationErrors)) validationSucess = false;
 			if(!PreValidateUniqueIDToDrop(validationErrors)) validationSucess = false;
-			ValidateRecipe();
+			ValidateRecipe(validationErrors, false);
 			if(!ValidateTextures(validationErrors)) validationSucess = false;
 
 			return new ValidationResult(validationSucess, validationErrors);
@@ -452,16 +452,26 @@ namespace CyubeBlockMaker
 				return false;
 			}
 		}
-		private void ValidateRecipe()
+		private bool ValidateRecipe(List<string> validationErrors, bool export)
 		{
-			if (recipe == null)
+			if (recipe == null || recipe.SizeX == 0 || recipe.SizeY == 0 || recipe.SizeZ == 0)
 			{
-				recipe = new BlockRecipe();
-				recipe.Array = Array.Empty<int>();
-				recipe.SizeZ = 0;
-				recipe.SizeY = 0;
-				recipe.SizeX = 0;
+				if (export && MessageBox.Show("Warning: blocks without a recipe can only be used in VoxelAPI mods. Continue Export?", "Exprot Warning", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+				{
+					recipe = new BlockRecipe();
+					recipe.Array = Array.Empty<int>();
+					recipe.SizeZ = 0;
+					recipe.SizeY = 0;
+					recipe.SizeX = 0;
+					return true;
+				}
+				else
+				{
+					validationErrors.Add("No Recipe detected! Please add one!");
+					return false;
+				}
 			}
+			return true;
 		}
 		private bool ValidateTextures(List<string> validationErrors)
 		{
