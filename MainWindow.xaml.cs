@@ -783,7 +783,6 @@ namespace CyubeBlockMaker
 			}
 		}
 	
-
 		private string GetAlbedoExportCLIParams(string sourceImagePath, string targetImagePath)
 		{
 			return "-i " + sourceImagePath + " -o " + targetImagePath + " -nout -m -f BC3,UBN,sRGB -q pvrtcbest";

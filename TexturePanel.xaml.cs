@@ -21,9 +21,17 @@ namespace CyubeBlockMaker
 	/// </summary>
 	public partial class TexturePanel : UserControl
 	{
+		private static int TEXTURE_ALBEDO_SIZE = 2048;
+		private static int TEXTURE_SMALL_ALBEDO_SIZE = 512;
+		private static int TEXTURE_GLOW_SIZE = 1024;
+
+		private BitmapImage image;
+		
 		public Uri TextureURI;
 		public TexturePanelType textureType = TexturePanelType.Albedo;
 		public string slotName;
+
+		private bool imageSizeInvalidFlag = false;
 		
 		public TexturePanel()
 		{
@@ -45,8 +53,7 @@ namespace CyubeBlockMaker
 				}
 				if(imageFiles.Count == 1)
 				{
-					TextureURI = new Uri(files[0]);
-					TexturePreview_Image.Source = new BitmapImage(TextureURI);
+					SetImageSource(imageFiles[0]);
 				}
 				else if(imageFiles.Count > 1)
 				{
@@ -65,23 +72,57 @@ namespace CyubeBlockMaker
 			if (fileDialog.ShowDialog() == true)
 			{
 				string filePath = fileDialog.FileName;
-				if(System.IO.Path.GetExtension(filePath).Equals(".png"))
-				{
-					TextureURI = new Uri(filePath);
-					TexturePreview_Image.Source = new BitmapImage(TextureURI);
-				}
+				SetImageSource(filePath);
 			}
 		}
 
 		public bool SetImageSource(string filePath)
 		{
+			BorderBrush = null;
+			imageSizeInvalidFlag = false;
+
 			if (System.IO.Path.GetExtension(filePath).Equals(".png"))
 			{
 				TextureURI = new Uri(filePath);
-				TexturePreview_Image.Source = new BitmapImage(TextureURI);
+				image = new BitmapImage(TextureURI);
+				TexturePreview_Image.Source = image;
+
+				if (!ValidateImageSize()) WarnUserInvalidImageSize();
+
 				return true;
 			}
 			return false;
+		}
+
+		private void WarnUserInvalidImageSize()
+		{
+			BorderBrush = Brushes.Red;
+			BorderThickness = new Thickness(1);
+			imageSizeInvalidFlag = true;
+
+			string correctSize="";
+			if(textureType == TexturePanelType.Albedo || textureType == TexturePanelType.Normal) correctSize = TEXTURE_ALBEDO_SIZE.ToString();
+			if(textureType == TexturePanelType.Albedo_Small || textureType == TexturePanelType.RecipePreview) correctSize = TEXTURE_SMALL_ALBEDO_SIZE.ToString();
+			if(textureType == TexturePanelType.Glow) correctSize = TEXTURE_GLOW_SIZE.ToString();
+
+			MessageBox.Show("Warning! The image in slot " + slotName + "is not the correct size! The correct size for that slot is " + correctSize + "x" + correctSize + ".");
+		}
+
+		private bool ValidateImageSize()
+		{
+
+			if      (textureType == TexturePanelType.Albedo || textureType == TexturePanelType.Normal)
+			{
+				return image.PixelHeight == TEXTURE_ALBEDO_SIZE && image.PixelWidth == TEXTURE_ALBEDO_SIZE;
+			}
+			else if (textureType == TexturePanelType.Albedo_Small || textureType == TexturePanelType.RecipePreview)
+			{
+				return image.PixelHeight == TEXTURE_SMALL_ALBEDO_SIZE && image.PixelWidth == TEXTURE_SMALL_ALBEDO_SIZE;
+			}
+			else
+			{
+				return image.PixelHeight == TEXTURE_GLOW_SIZE && image.PixelWidth == TEXTURE_GLOW_SIZE;
+			}
 		}
 	}
 
