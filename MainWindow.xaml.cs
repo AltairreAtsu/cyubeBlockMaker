@@ -953,7 +953,11 @@ namespace CyubeBlockMaker
 			ExportButton.Background = mouseOverButtonBackground;
 		}
 
-
+		private void RandomButton_Click(object sender, RoutedEventArgs e)
+		{
+			int rand = RandomNumberGenerator.GetInt32(0, 214748364);
+			UniqueID_Textbox.Text = rand.ToString();
+		}
 	}
 }
 
