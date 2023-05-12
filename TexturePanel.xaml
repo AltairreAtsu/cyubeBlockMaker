@@ -5,7 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:CyubeBlockMaker"
              mc:Ignorable="d" 
-             d:DesignHeight="150" d:DesignWidth="110" Drop="Grid_Drop" MouseLeftButtonDown="Grid_MouseLeftButtonDown">
+             d:DesignHeight="150" d:DesignWidth="110" Drop="Grid_Drop" MouseLeftButtonDown="Grid_MouseLeftButtonDown"
+			 ToolTip="Click here to load an image. You may also drag images directly onto the slot. If you drag multiple images the app will try to match their names to the correct slots.">
 	<Grid AllowDrop="True">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="5*"/>

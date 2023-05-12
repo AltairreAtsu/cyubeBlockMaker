@@ -93,6 +93,7 @@
 							</Grid.ColumnDefinitions>
 							<Label Content="Name" Grid.Column="0"/>
 							<TextBox Name="Name_TextBox" ToolTip="Use this field to give your custom block a name." TextChanged="Name_TextBox_TextChanged"  TextWrapping="Wrap" Grid.Column="1"/>
+							<Label Name="NameSuggestionLabel" Grid.Column="1" FontStyle="Italic" FontSize="9" Foreground="lightGray" Content="The name of your block." IsHitTestVisible="False"/>
 						</Grid>
 						<Grid Grid.Row="1" Grid.Column="0" >
 							<Grid.ColumnDefinitions>
@@ -101,6 +102,7 @@
 							</Grid.ColumnDefinitions>
 							<Label Content="Creator Name" Grid.Column="0"/>
 							<TextBox Name="CreatorName_TextBox" ToolTip="Use this field to credit yourself and anyone else who worked on your block." TextWrapping="Wrap" Grid.Column="1" TextChanged="CreatorName_TextBox_TextChanged"/>
+							<Label Name="CreatorNameSuggestionLabel" Grid.Column="1" FontStyle="Italic" FontSize="9" Foreground="LightGray" Content="Your name." IsHitTestVisible="False"/>
 						</Grid>
 						<Grid Grid.Row="2" Grid.Column="0">
 							<Grid.ColumnDefinitions>
@@ -118,6 +120,7 @@
 							</Grid.ColumnDefinitions>
 							<Label Content="Unique ID" Grid.Column="0"/>
 							<TextBox Name="UniqueID_Textbox" ToolTip="Use this field to specify the internal ID number for this block. No two blocks can share an ID." PreviewTextInput="UniqueID_Textbox_PreviewTextInput" TextWrapping="Wrap" Grid.Column="1" TextChanged="UniqueID_Textbox_TextChanged"/>
+							<Label Name="UniqueIDSuggestionLabel" Grid.Column="1" FontSize="9" FontStyle="Italic" Foreground="LightGray" Content="The Internal ID of your block. Try using a random number." IsHitTestVisible="False"/>
 						</Grid>
 						<Grid Grid.Row="1" Grid.Column="1">
 							<Grid.ColumnDefinitions>
@@ -155,7 +158,8 @@
 										<ColumnDefinition Width="2.7*"/>
 									</Grid.ColumnDefinitions>
 									<Label Content="Category" Grid.Column="0"/>
-									<TextBox Name="Category_TextBox" ToolTip="Use this field to specify a category for the block to be placed into in the crafting menu." TextWrapping="Wrap" Grid.Column="1"/>
+									<TextBox Name="Category_TextBox" ToolTip="Use this field to specify a category for the block to be placed into in the crafting menu." TextWrapping="Wrap" Grid.Column="1" TextChanged="Category_TextBox_TextChanged"/>
+									<Label Name="CategorySuggestionLabel" Grid.Column="1" FontSize="9" FontStyle="Italic" Foreground="LightGray" Content="What tab your block appears in the crafting menu." IsHitTestVisible="False"/>
 								</Grid>
 								<Grid Grid.Row="0" Grid.Column="1">
 									<Grid.ColumnDefinitions>
@@ -164,6 +168,7 @@
 									</Grid.ColumnDefinitions>
 									<Label Content="UniqueIDToDrop" Grid.Column="0"/>
 									<TextBox Name="UniqueIDToDrop_TextBox" ToolTip="Use this field to specify the id of another customblock for your block to drop when destroyed. &#x0a; You can also enter -1 here to make your block drop nothing. Just leave this blank if you want the block to drop itself." Grid.Column="1" PreviewTextInput="UniqueIDToDrop_TextBox_PreviewTextInput" TextChanged="UniqueIDToDrop_TextBox_TextChanged"/>
+									<Label Name="UniqueIDToDropSuggestionLabel" Grid.Column="1" FontSize="9" FontStyle="Italic" Foreground="LightGray" Content="The ID of a Custom Block you want your block to drop." IsHitTestVisible="False"/>
 								</Grid>
 								<Grid Grid.Row="1" Grid.Column="0">
 									<Grid.ColumnDefinitions>
@@ -200,15 +205,15 @@
 								<ColumnDefinition Width="5*"/>
 							</Grid.ColumnDefinitions>
 							<Label Content="Mode" VerticalAlignment="Center" Grid.Column="0"/>
-							<ComboBox Name="TextureMode_ComboBox" VerticalAlignment="Center" Grid.Column="1" SelectionChanged="TextureMode_ComboBox_SelectionChanged">
-								<ComboBoxItem Content="1: all" IsSelected="True"/>
-								<ComboBoxItem Content="2: sides and updown"/>
-								<ComboBoxItem Content="3: sides, up, and down"/>
-								<ComboBoxItem Content="4: left, right, front, back, up, and down"/>
+							<ComboBox Name="TextureMode_ComboBox" VerticalAlignment="Center" Grid.Column="1" SelectionChanged="TextureMode_ComboBox_SelectionChanged" ToolTip="This dropdown determines how many textures you want to use for your block. You can texture every side individually or make some sides share textures.">
+								<ComboBoxItem Content="1: all" IsSelected="True" ToolTip="All sides share the same texture."/>
+								<ComboBoxItem Content="2: sides and updown" ToolTip="The top and bottom of the block share a texture, and the side faces get their own texture."/>
+								<ComboBoxItem Content="3: sides, up, and down" ToolTip="The tope and bottom each get their own texture. And the side faces share a texture."/>
+								<ComboBoxItem Content="4: left, right, front, back, up, and down" ToolTip="All sides get their own texture."/>
 							</ComboBox>
 						</Grid>
-						<CheckBox Name="WithNormals_CheckBox" Content="With Normals" VerticalAlignment="Center" Grid.Column="1" Unchecked="WithNormals_CheckBox_Unchecked" Checked="WithNormals_CheckBox_Checked"/>
-						<CheckBox Name="WithGlowMaps_CheckBox" Content="With Glow Maps" VerticalAlignment="Center" Grid.Column="2" Unchecked="WithGlowMaps_CheckBox_Unchecked" Checked="WithGlowMaps_CheckBox_Checked"/>
+						<CheckBox Name="WithNormals_CheckBox" Content="With Normals" VerticalAlignment="Center" Grid.Column="1" Unchecked="WithNormals_CheckBox_Unchecked" Checked="WithNormals_CheckBox_Checked" ToolTip="Your block uses Normal Map textures. These are blue-ish green textures that provide fake depth to your block."/>
+						<CheckBox Name="WithGlowMaps_CheckBox" Content="With Glow Maps" VerticalAlignment="Center" Grid.Column="2" Unchecked="WithGlowMaps_CheckBox_Unchecked" Checked="WithGlowMaps_CheckBox_Checked" ToolTip="Your block uses an emissive texture that makes it appear to be glowing."/>
 					</Grid>
 					<ScrollViewer Grid.Row="1" MaxHeight="280">
 						<WrapPanel Name="TextureTabWrapPanel">

@@ -550,6 +550,14 @@ namespace CyubeBlockMaker
 				nameInvalidFlag = false;
 				Name_TextBox.BorderBrush = SystemColors.ControlDarkBrush;
 			}
+			if(Name_TextBox.Text != string.Empty)
+			{
+				NameSuggestionLabel.Visibility = Visibility.Hidden;
+			}
+			else
+			{
+				NameSuggestionLabel.Visibility = Visibility.Visible;
+			}
 		}
 		private void CreatorName_TextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
@@ -557,6 +565,14 @@ namespace CyubeBlockMaker
 			{
 				creatorNameInvalidFlag = false;
 				CreatorName_TextBox.BorderBrush = SystemColors.ControlDarkBrush;
+			}
+			if(CreatorName_TextBox.Text != string.Empty)
+			{
+				CreatorNameSuggestionLabel.Visibility = Visibility.Hidden;
+			}
+			else
+			{
+				CreatorNameSuggestionLabel.Visibility = Visibility.Visible;
 			}
 		}
 		private void UniqueID_Textbox_TextChanged(object sender, TextChangedEventArgs e)
@@ -566,6 +582,14 @@ namespace CyubeBlockMaker
 				uniqueIDInvalidFlag = false;
 				UniqueID_Textbox.BorderBrush = SystemColors.ControlDarkBrush;
 			}
+			if(UniqueID_Textbox.Text != string.Empty)
+			{
+				UniqueIDSuggestionLabel.Visibility = Visibility.Hidden;
+			}
+			else
+			{
+				UniqueIDSuggestionLabel.Visibility= Visibility.Visible;
+			}
 		}
 		private void UniqueIDToDrop_TextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
@@ -573,6 +597,25 @@ namespace CyubeBlockMaker
 			{
 				uniqueIDToDropInvalidFlag = false;
 				UniqueIDToDrop_TextBox.BorderBrush = SystemColors.ControlDarkBrush;
+			}
+			if(UniqueIDToDrop_TextBox.Text != string.Empty)
+			{
+				UniqueIDToDropSuggestionLabel.Visibility = Visibility.Hidden;
+			}
+			else
+			{
+				UniqueIDToDropSuggestionLabel.Visibility = Visibility.Visible;
+			}
+		}
+		private void Category_TextBox_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if(Category_TextBox.Text != string.Empty)
+			{
+				CategorySuggestionLabel.Visibility = Visibility.Hidden;
+			}
+			else
+			{
+				CategorySuggestionLabel.Visibility = Visibility.Visible;
 			}
 		}
 
@@ -909,6 +952,8 @@ namespace CyubeBlockMaker
 		{
 			ExportButton.Background = mouseOverButtonBackground;
 		}
+
+
 	}
 }
 
