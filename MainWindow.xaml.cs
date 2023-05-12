@@ -77,7 +77,21 @@ namespace CyubeBlockMaker
 			TextureMode_ComboBox.SelectedIndex = 0;
 			TextureTabWrapPanel.Children.Clear();
 			TextureMode_ComboBox_SelectionChanged(null, null);
+
+			ResetStateFlags();
 		}
+		private void ResetStateFlags()
+		{
+			nameInvalidFlag = false;
+			Name_TextBox.BorderBrush = SystemColors.ControlDarkBrush;
+			creatorNameInvalidFlag = false;
+			CreatorName_TextBox.BorderBrush = SystemColors.ControlDarkBrush;
+			uniqueIDInvalidFlag = false;
+			UniqueID_Textbox.BorderBrush = SystemColors.ControlDarkBrush;
+			uniqueIDToDropInvalidFlag = false;
+			UniqueIDToDrop_TextBox.BorderBrush = SystemColors.ControlDarkBrush;
+		}
+
 		public void Save(bool forceDialog)
 		{
 			ValidationResult result = ValidateSaveData();
