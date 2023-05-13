@@ -89,6 +89,7 @@ namespace CyubeBlockMaker
 
 				if (!ValidateImageSize()) WarnUserInvalidImageSize();
 
+				MainWindow.mainWindow.dataHasChanged = true;
 				return true;
 			}
 			return false;

@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:CyubeBlockMaker"
         mc:Ignorable="d"
         Title="Cyube Block Forge" Height="394" Width="800"
-		MinWidth="800" MinHeight="394">
+		MinWidth="800" MinHeight="394"
+		Closing="Window_Closing">
 	<StackPanel>
 		<DockPanel LastChildFill="false" Background="LightGray">
 			<Grid Name="NewBlockButton" Margin="10,0,0,0" MouseEnter="NewBlockButton_MouseEnter" MouseLeave="NewBlockButton_MouseLeave" MouseLeftButtonDown="NewBlockButton_MouseLeftButtonDown" MouseLeftButtonUp="NewBlockButton_MouseLeftButtonUp">
@@ -69,6 +70,18 @@
 				</Image>
 				<Label Grid.Row="1" Content="Export" HorizontalContentAlignment="Center"/>
 			</Grid>
+			<Grid Name="SettingsButton" MouseEnter="SettingsButton_MouseEnter" MouseLeave="SettingsButton_MouseLeave" MouseLeftButtonDown="SettingsButton_MouseLeftButtonDown" MouseLeftButtonUp="SettingsButton_MouseLeftButtonUp">
+				<Grid.RowDefinitions>
+					<RowDefinition/>
+					<RowDefinition/>
+				</Grid.RowDefinitions>
+				<Image Width="40" Height="40" Grid.Row="0">
+					<Image.Source>
+						<BitmapImage UriSource="/Images/Settings.png"/>
+					</Image.Source>
+				</Image>
+				<Label Grid.Row="1" Content="Settings" HorizontalContentAlignment="Center"/>
+			</Grid>
 
 		</DockPanel>
 		<Border BorderBrush="DarkGray" BorderThickness="1"/>
@@ -110,7 +123,7 @@
 								<ColumnDefinition Width="2.7*"/>
 							</Grid.ColumnDefinitions>
 							<Label Content="Yield" Grid.Column="0"/>
-							<Slider Name="Yield_Slider" ToolTip="Use this slider to specify how much of this block you get when you craft it." Grid.Column="1" Minimum="0" Maximum="50" AutoToolTipPlacement="TopLeft" Interval="1" AutoToolTipPrecision="0" />
+							<Slider Name="Yield_Slider" ToolTip="Use this slider to specify how much of this block you get when you craft it." Grid.Column="1" Minimum="0" Maximum="50" AutoToolTipPlacement="TopLeft" Interval="1" AutoToolTipPrecision="0" ValueChanged="Yield_Slider_ValueChanged" />
 						</Grid>
 
 						<Grid Grid.Row="0" Grid.Column="1">
@@ -130,7 +143,7 @@
 								<ColumnDefinition Width="2.7*"/>
 							</Grid.ColumnDefinitions>
 							<Label Content="Digging Tool" Grid.Column="0"/>
-							<ComboBox Name="SimliarTo_ComboBox" ToolTip="Use this field to choose what tool is used to break your block. Use Indestrucible if you don't want the block to be breakable." Grid.Column="1">
+							<ComboBox Name="SimliarTo_ComboBox" ToolTip="Use this field to choose what tool is used to break your block. Use Indestrucible if you don't want the block to be breakable." Grid.Column="1" SelectionChanged="SimliarTo_ComboBox_SelectionChanged">
 								<ComboBoxItem Content="Pickaxe" IsSelected="True"/>
 								<ComboBoxItem Content="Axe"/>
 								<ComboBoxItem Content="Shovel"/>
@@ -138,7 +151,11 @@
 							</ComboBox>
 						</Grid>
 					</Grid>
-					<Button Content="Import recipe from file" ToolTip="If you exported a crafting Recipe you can load that recipe into your block with this button. Just navigate to where you saved the file &#x0a; ([%localappdata%]/cyubeVR/Saved/Dev/Recipe.txt by default) and load the file. Hint you can also drag the file onto this button!" Click="ImportRecipe_Click" Margin="320,0" VerticalAlignment="Center" AllowDrop="True" Drop="Button_Drop"/>
+					<DockPanel LastChildFill="false">
+						<Button Content="Import recipe from file" ToolTip="If you exported a crafting Recipe you can load that recipe into your block with this button. Just navigate to where you saved the file &#x0a; ([%localappdata%]/cyubeVR/Saved/Dev/Recipe.txt by default) and load the file. Hint you can also drag the file onto this button!" Click="ImportRecipe_Click" VerticalAlignment="Center" AllowDrop="True" Drop="Button_Drop"/>
+						<Button Content="Import Last Recipe" ToolTip="Use this button to automatically attempt to load the last recipe you exported from Cyube." VerticalAlignment="Center" Click="ImportLastRecipe_Click"/>
+
+					</DockPanel>
 					<Expander Header="Optional Settings">
 						<Grid>
 							<Grid.RowDefinitions>
@@ -178,12 +195,12 @@
 										<ColumnDefinition Width="2.7*"/>
 									</Grid.ColumnDefinitions>
 									<Label Content="Animation Speed" Grid.Column="0"/>
-									<Slider Name="AnimationSpeed_Slider" ToolTip="You can use this slider to specify the speed at which your block animates if it can." Grid.Column="1" Minimum="0" Maximum="255" AutoToolTipPlacement="TopLeft" Interval="1" AutoToolTipPrecision="0"/>
+									<Slider Name="AnimationSpeed_Slider" ToolTip="You can use this slider to specify the speed at which your block animates if it can." Grid.Column="1" Minimum="0" Maximum="255" AutoToolTipPlacement="TopLeft" Interval="1" AutoToolTipPrecision="0" ValueChanged="AnimationSpeed_Slider_ValueChanged"/>
 								</Grid>
 							</Grid>
 							<DockPanel LastChildFill="false" Margin="10" Grid.Row="1">
-								<CheckBox Name="AllowMove_Checkbox" ToolTip="This Checkbox determines if your block is allowed to be drag moved around after it's been placed." Content="Allow Move" IsChecked="True" VerticalAlignment="Center"/>
-								<CheckBox Name="AllowCrystalPlace_Checkbox" ToolTip="This Checkbox determines if you can place multiple blocks at once with cyrstal assisted placement." Content="Allow Crystal Place" IsChecked="True" VerticalAlignment="Center"/>
+								<CheckBox Name="AllowMove_Checkbox" ToolTip="This Checkbox determines if your block is allowed to be drag moved around after it's been placed." Content="Allow Move" IsChecked="True" VerticalAlignment="Center" Checked="AllowMove_Checkbox_Checked" Unchecked="AllowMove_Checkbox_Unchecked"/>
+								<CheckBox Name="AllowCrystalPlace_Checkbox" ToolTip="This Checkbox determines if you can place multiple blocks at once with cyrstal assisted placement." Content="Allow Crystal Place" IsChecked="True" VerticalAlignment="Center" Checked="AllowCrystalPlace_Checkbox_Checked" Unchecked="AllowCrystalPlace_Checkbox_Unchecked"/>
 							</DockPanel>
 						</Grid>
 					</Expander>

@@ -36,11 +36,19 @@ namespace CyubeBlockMaker
 		private bool creatorNameInvalidFlag = false;
 		private bool uniqueIDInvalidFlag = false;
 		private bool uniqueIDToDropInvalidFlag = false;
+		public bool dataHasChanged = false;
 
 		private int uID;
 		private int UIDToDrop;
 		private bool glowMap;
 		private bool normalMap;
+
+		private bool allowMove = true;
+		private bool allowCrystalPlacement = true;
+		private int textureMode = 0;
+		private int similiarTo = 0;
+		private int animationSpeed = 0;
+		private int yield = 0;
 
 		private string saveDestination = "";
 
@@ -82,6 +90,7 @@ namespace CyubeBlockMaker
 		}
 		private void ResetStateFlags()
 		{
+			dataHasChanged = false;
 			nameInvalidFlag = false;
 			Name_TextBox.BorderBrush = SystemColors.ControlDarkBrush;
 			creatorNameInvalidFlag = false;
@@ -114,6 +123,7 @@ namespace CyubeBlockMaker
 			{
 				WriteData(folderBrowserDialog.SelectedPath, block);
 			}
+			dataHasChanged = false;
 		}
 		private void WriteData(string path, CustomBlock block)
 		{
@@ -138,6 +148,11 @@ namespace CyubeBlockMaker
 		}
 		public void OpenBlock()
 		{
+			if (!DiscardUnsavedData())
+			{
+				return;
+			}
+
 			OpenFileDialog openFileDialog = new OpenFileDialog();
 			openFileDialog.Filter = "Block | *.block";
 			openFileDialog.Multiselect = false;
@@ -198,7 +213,7 @@ namespace CyubeBlockMaker
 					}
 				}
 			}
-			//TODO Attempt to Load Textures, If Fail setup Texture Slots according to the Texture Mode
+			dataHasChanged = false;
 		}
 		public void Export()
 		{
@@ -308,7 +323,6 @@ namespace CyubeBlockMaker
 			if (!ValidateUniqueID(validationErrors)) validationSucess = false;
 			if(!ValidateUniqueIDToDrop(validationErrors)) validationSucess = false;
 			if(!ValidateRecipe(validationErrors, true)) validationSucess = false;
-			if(!ValidateTextures(validationErrors)) validationSucess = false;
 			if(!ValidateTexturePanels(validationErrors)) validationSucess = false;
 
 			return new ValidationResult(validationSucess, validationErrors);
@@ -322,7 +336,6 @@ namespace CyubeBlockMaker
 			if(!PreValidateUniqueID(validationErrors)) validationSucess = false;
 			if(!PreValidateUniqueIDToDrop(validationErrors)) validationSucess = false;
 			ValidateRecipe(validationErrors, false);
-			if(!ValidateTextures(validationErrors)) validationSucess = false;
 
 			return new ValidationResult(validationSucess, validationErrors);
 		}
@@ -473,29 +486,6 @@ namespace CyubeBlockMaker
 			}
 			return true;
 		}
-		private bool ValidateTextures(List<string> validationErrors)
-		{
-			if (WithNormals_CheckBox.IsChecked != null)
-			{
-				normalMap = WithNormals_CheckBox.IsChecked.Value;
-			}
-			else
-			{
-				validationErrors.Add("Failed to parse value of Texture Has Normals.");
-				return false;
-			}
-
-			if (WithGlowMaps_CheckBox.IsChecked != null)
-			{
-				glowMap = WithGlowMaps_CheckBox.IsChecked.Value;
-			}
-			else
-			{
-				validationErrors.Add("Failed to parse value of Texture has Glow Maps.");
-				return false;
-			}
-			return true;
-		}
 		private bool ValidateTexturePanels(List<string> validationErrors)
 		{
 			foreach (var panel in texturePanels)
@@ -555,6 +545,7 @@ namespace CyubeBlockMaker
 		// Text Change Event Handlers
 		private void Name_TextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
+			dataHasChanged = true;
 			if (nameInvalidFlag)
 			{
 				nameInvalidFlag = false;
@@ -571,6 +562,7 @@ namespace CyubeBlockMaker
 		}
 		private void CreatorName_TextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
+			dataHasChanged = true;
 			if (creatorNameInvalidFlag)
 			{
 				creatorNameInvalidFlag = false;
@@ -587,6 +579,7 @@ namespace CyubeBlockMaker
 		}
 		private void UniqueID_Textbox_TextChanged(object sender, TextChangedEventArgs e)
 		{
+			dataHasChanged = true;
 			if (uniqueIDInvalidFlag)
 			{
 				uniqueIDInvalidFlag = false;
@@ -603,6 +596,7 @@ namespace CyubeBlockMaker
 		}
 		private void UniqueIDToDrop_TextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
+			dataHasChanged = true;
 			if (uniqueIDToDropInvalidFlag)
 			{
 				uniqueIDToDropInvalidFlag = false;
@@ -619,6 +613,7 @@ namespace CyubeBlockMaker
 		}
 		private void Category_TextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
+			dataHasChanged= true;
 			if(Category_TextBox.Text != string.Empty)
 			{
 				CategorySuggestionLabel.Visibility = Visibility.Hidden;
@@ -632,6 +627,9 @@ namespace CyubeBlockMaker
 		// Texture Panel Mangement
 		private void TextureMode_ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			//dataHasChanged = textureMode == TextureMode_ComboBox.SelectedIndex;
+			textureMode = TextureMode_ComboBox.SelectedIndex;
+
 			if (TextureTabWrapPanel == null) return;
 			TextureTabWrapPanel.Children.Clear();
 			texturePanels.Clear();
@@ -782,20 +780,26 @@ namespace CyubeBlockMaker
 
 		private void WithNormals_CheckBox_Checked(object sender, RoutedEventArgs e)
 		{
-
-				AddNormalMapPanels(TextureMode_ComboBox.SelectedIndex);
-				
+			dataHasChanged = normalMap != WithNormals_CheckBox.IsChecked;
+			normalMap = WithNormals_CheckBox.IsChecked.Value;
+			AddNormalMapPanels(TextureMode_ComboBox.SelectedIndex);
 		}
 		private void WithGlowMaps_CheckBox_Checked(object sender, RoutedEventArgs e)
 		{
-				AddGlowMapPanels(TextureMode_ComboBox.SelectedIndex);
+			dataHasChanged = glowMap != WithGlowMaps_CheckBox.IsChecked;
+			glowMap = WithGlowMaps_CheckBox.IsChecked.Value;
+			AddGlowMapPanels(TextureMode_ComboBox.SelectedIndex);
 		}
 		private void WithNormals_CheckBox_Unchecked(object sender, RoutedEventArgs e)
 		{
+			dataHasChanged = normalMap != WithNormals_CheckBox.IsChecked;
+			normalMap = WithNormals_CheckBox.IsChecked.Value;
 			RemoveAllPanelsOfType(TexturePanelType.Normal);
 		}
 		private void WithGlowMaps_CheckBox_Unchecked(object sender, RoutedEventArgs e)
 		{
+			dataHasChanged = glowMap != WithGlowMaps_CheckBox.IsChecked;
+			glowMap = WithGlowMaps_CheckBox.IsChecked.Value;
 			RemoveAllPanelsOfType(TexturePanelType.Glow);
 		}
 
@@ -827,6 +831,7 @@ namespace CyubeBlockMaker
 				{
 					MessageBox.Show("Imported Sucessfully.");
 					recipe = br;
+					dataHasChanged = true;
 				}
 				else
 				{
@@ -846,6 +851,7 @@ namespace CyubeBlockMaker
 					{
 						MessageBox.Show("Imported Sucessfully.");
 						recipe = br;
+						dataHasChanged = true;
 					}
 					else
 					{
@@ -854,7 +860,27 @@ namespace CyubeBlockMaker
 				}
 			}
 		}
-	
+
+		private void ImportLastRecipe_Click(object sender, RoutedEventArgs e)
+		{
+			var fileName = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "cyubeVR\\Saved\\Dev\\Recipe.txt");
+			if (File.Exists(fileName))
+			{
+				BlockRecipe br = JsonManager.ReadRecipe(fileName);
+				if (br != null)
+				{
+					MessageBox.Show("Imported Sucessfully.");
+					recipe = br;
+					dataHasChanged = true;
+				}
+			}
+			else
+			{
+				MessageBox.Show("Could no locate the last exported recipe file.");
+			}
+		}
+
+		// DDS Conversion
 		private string GetAlbedoExportCLIParams(string sourceImagePath, string targetImagePath)
 		{
 			return "-i " + sourceImagePath + " -o " + targetImagePath + " -nout -m -f BC3,UBN,sRGB -q pvrtcbest";
@@ -962,11 +988,87 @@ namespace CyubeBlockMaker
 		{
 			ExportButton.Background = mouseOverButtonBackground;
 		}
+		
+		// Settings Button Handling
+		private void SettingsButton_MouseEnter(object sender, MouseEventArgs e)
+		{
+			SettingsButton.Background = mouseOverButtonBackground;
+		}
+		private void SettingsButton_MouseLeave(object sender, MouseEventArgs e)
+		{
+			SettingsButton.Background = defaultButtonBackground;
+		}
+		private void SettingsButton_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+		{
+			SettingsButton.Background = mouseDownButtonBackground;
+			// Open Settings Window
+		}
+		private void SettingsButton_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+		{
+			SettingsButton.Background = mouseOverButtonBackground;
+		}
 
 		private void RandomButton_Click(object sender, RoutedEventArgs e)
 		{
 			int rand = RandomNumberGenerator.GetInt32(0, 214748364);
 			UniqueID_Textbox.Text = rand.ToString();
+		}
+		
+		// Misc Event Handlers
+		private void Yield_Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		{
+			dataHasChanged = yield != Yield_Slider.Value;
+			yield = (int)Math.Round(Yield_Slider.Value);
+		}
+		private void SimliarTo_ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			dataHasChanged = similiarTo != SimliarTo_ComboBox.SelectedIndex;
+			similiarTo = SimliarTo_ComboBox.SelectedIndex;
+		}
+		private void AnimationSpeed_Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		{
+			dataHasChanged= animationSpeed != AnimationSpeed_Slider.Value;
+			animationSpeed = (int)Math.Round(AnimationSpeed_Slider.Value);
+		}
+		private void AllowMove_Checkbox_Checked(object sender, RoutedEventArgs e)
+		{
+			dataHasChanged = allowMove != AllowMove_Checkbox.IsChecked;
+			allowMove = AllowMove_Checkbox.IsChecked.Value;
+		}
+		private void AllowMove_Checkbox_Unchecked(object sender, RoutedEventArgs e)
+		{
+			dataHasChanged = allowMove != AllowMove_Checkbox.IsChecked;
+			allowMove = AllowMove_Checkbox.IsChecked.Value;
+		}
+		private void AllowCrystalPlace_Checkbox_Checked(object sender, RoutedEventArgs e)
+		{
+			dataHasChanged = allowCrystalPlacement != AllowCrystalPlace_Checkbox.IsChecked;
+			allowCrystalPlacement = AllowCrystalPlace_Checkbox.IsChecked.Value;
+		}
+		private void AllowCrystalPlace_Checkbox_Unchecked(object sender, RoutedEventArgs e)
+		{
+			dataHasChanged = allowCrystalPlacement != AllowCrystalPlace_Checkbox.IsChecked;
+			allowCrystalPlacement = AllowCrystalPlace_Checkbox.IsChecked.Value;
+		}
+
+		private bool DiscardUnsavedData()
+		{
+			if (dataHasChanged)
+			{
+				if (MessageBox.Show("Close without saving?", "Warning", MessageBoxButton.OKCancel) == MessageBoxResult.Cancel)
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+
+		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			if(!DiscardUnsavedData()) 
+			{
+				e.Cancel = true;
+			}
 		}
 	}
 }

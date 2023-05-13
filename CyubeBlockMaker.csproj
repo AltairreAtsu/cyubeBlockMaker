@@ -13,6 +13,7 @@
     <None Remove="Images\OpenFile.png" />
     <None Remove="Images\SaveAsFile.png" />
     <None Remove="Images\SaveFile.png" />
+    <None Remove="Images\Settings.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +27,7 @@
     <Resource Include="Images\OpenFile.png" />
     <Resource Include="Images\SaveFile.png" />
     <Resource Include="Images\SaveAsFile.png" />
+    <Resource Include="Images\Settings.png" />
   </ItemGroup>
 
 </Project>
