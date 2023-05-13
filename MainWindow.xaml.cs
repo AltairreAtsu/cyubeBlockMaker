@@ -27,9 +27,11 @@ namespace CyubeBlockMaker
 	{
 		public static MainWindow mainWindow;
 
-		private Brush defaultButtonBackground = null;
-		private Brush mouseOverButtonBackground = Brushes.Lavender;
-		private Brush mouseDownButtonBackground = Brushes.AliceBlue;
+		public static Brush defaultButtonBackground = null;
+		public static Brush mouseOverButtonBackground = Brushes.Lavender;
+		public static Brush mouseDownButtonBackground = Brushes.AliceBlue;
+
+		public static string WORKSPACE_ROOT = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\Workspace\\";
 
 		// State Flags
 		private bool nameInvalidFlag = false;
@@ -60,6 +62,7 @@ namespace CyubeBlockMaker
 			InitializeComponent();
 			mainWindow = this;
 			InitializeTextureTab();
+			InitializeWorkspace();
 		}
 
 		private void InitializeTextureTab()
@@ -68,6 +71,71 @@ namespace CyubeBlockMaker
 			AddTexturePanel("all_small", TexturePanelType.Albedo_Small);
 			AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
 		}
+		private void InitializeWorkspace()
+		{
+			if (!Directory.Exists(WORKSPACE_ROOT))
+			{
+				Directory.CreateDirectory(WORKSPACE_ROOT);
+				// Workspace is empty
+				return;
+			}
+			Dictionary<string, TreeViewItem> outlinerChildren = new Dictionary<string, TreeViewItem>();
+			DirSearch(WORKSPACE_ROOT, outlinerChildren);
+		}
+		private void DirSearch(string sDir, Dictionary<string, TreeViewItem> outlinerChildren)
+		{
+			try
+			{
+				TreeViewItem item = new TreeViewItem();
+				item.Header = new DirectoryInfo(sDir).Name;
+				if (sDir == WORKSPACE_ROOT)
+				{
+					outlinerChildren.Add(sDir, item);
+					Outliner.Items.Add(item);
+				}
+				else
+				{
+					bool isBlockFolder = false;
+					foreach(string d in Directory.GetDirectories(sDir))
+					{
+						if(new DirectoryInfo(d).Name == "Textures") isBlockFolder = true;
+					}
+					if(!isBlockFolder && new DirectoryInfo(sDir).Name != "Textures")
+					{
+						outlinerChildren.Add (sDir+"\\", item);
+						outlinerChildren[Directory.GetParent(sDir).FullName+"\\"].Items.Add(item);
+					}
+				}
+
+				foreach (string d in Directory.GetDirectories(sDir))
+				{
+					foreach (string f in Directory.GetFiles(d))
+					{
+
+						if (PathIsBLockFile(f))
+						{
+							BlockLabel label = new BlockLabel();
+							label.filePath = f;
+							label.SetBlockName(System.IO.Path.GetFileNameWithoutExtension(f));
+							
+							outlinerChildren[Directory.GetParent(d).FullName+"\\"].Items.Add(label);
+						}
+					}
+					DirSearch(d, outlinerChildren);
+				}
+			}
+			catch (System.Exception excpt)
+			{
+				MessageBox.Show("Error Reading Workspace DirectorY! " + excpt.Message);
+				return;
+			}
+			return;
+		}
+		private bool PathIsBLockFile(string path)
+		{
+			return System.IO.Path.GetExtension(path) == ".block";
+		}
+
 
 		public void ResetWindow()
 		{
@@ -146,34 +214,21 @@ namespace CyubeBlockMaker
 				}
 			}
 		}
-		public void OpenBlock()
+		public void OpenBlock(string path)
 		{
 			if (!DiscardUnsavedData())
 			{
 				return;
 			}
 
-			OpenFileDialog openFileDialog = new OpenFileDialog();
-			openFileDialog.Filter = "Block | *.block";
-			openFileDialog.Multiselect = false;
-			openFileDialog.Title = "Select a Block to open.";
 			CustomBlock block;
-			string path;
-
-			if(openFileDialog.ShowDialog() == true)
+			block = JsonManager.ReadJson(path);
+			if (block == null)
 			{
-				block = JsonManager.ReadJson(openFileDialog.FileName);
-				path = openFileDialog.FileName;
-				if (block == null)
-				{
-					MessageBox.Show("Failed to Parse block JSON. File data may not be formated correctly.");
-					return;
-				}
-			}
-			else
-			{
+				MessageBox.Show("Failed to Parse block JSON. File data may not be formated correctly.");
 				return;
 			}
+
 			saveDestination = System.IO.Path.GetDirectoryName(path);
 
 			Name_TextBox.Text = block.Name;
@@ -182,21 +237,21 @@ namespace CyubeBlockMaker
 			Yield_Slider.Value = Math.Max(0, Math.Min(block.Yield, 50));
 
 			UniqueID_Textbox.Text = block.UniqueID.ToString();
-			SimliarTo_ComboBox.SelectedIndex = block.SimilarTo-1;
+			SimliarTo_ComboBox.SelectedIndex = block.SimilarTo - 1;
 
 			AnimationSpeed_Slider.Value = Math.Max(0, Math.Min(block.AnimationSpeed, 255));
 
 			AllowMove_Checkbox.IsChecked = block.AllowMove;
 			AllowCrystalPlace_Checkbox.IsChecked = block.AllowCrystalAssistedBlockPlacement;
-			if(block.CategoryName != null) Category_TextBox.Text = block.CategoryName;
+			if (block.CategoryName != null) Category_TextBox.Text = block.CategoryName;
 
 			recipe = block.Recipe;
-			
+
 			TextureMode_ComboBox.SelectedIndex = block.Textures.Mode - 1;
 			WithNormals_CheckBox.IsChecked = block.Textures.WithNormals;
 			WithGlowMaps_CheckBox.IsChecked = block.Textures.WithGlowMap;
 
-            string dir = System.IO.Path.GetDirectoryName(path);
+			string dir = System.IO.Path.GetDirectoryName(path);
 			dir = dir + System.IO.Path.DirectorySeparatorChar + "Textures";
 			if (Directory.Exists(dir))
 			{
@@ -214,6 +269,23 @@ namespace CyubeBlockMaker
 				}
 			}
 			dataHasChanged = false;
+		}
+		public void OpenBlock()
+		{
+			OpenFileDialog openFileDialog = new OpenFileDialog();
+			openFileDialog.Filter = "Block | *.block";
+			openFileDialog.Multiselect = false;
+			openFileDialog.Title = "Select a Block to open.";
+
+
+			if(openFileDialog.ShowDialog() == true)
+			{
+				OpenBlock(openFileDialog.FileName);
+			}
+			else
+			{
+				return;
+			}
 		}
 		public void Export()
 		{
