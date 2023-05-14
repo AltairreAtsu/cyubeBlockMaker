@@ -24,6 +24,7 @@ namespace CyubeBlockMaker
 	{
 		private string blockName;
 		public string filePath;
+		public TreeViewItem parent;
 		
 		public BlockLabel()
 		{
@@ -58,7 +59,35 @@ namespace CyubeBlockMaker
 		}
 		private void Conext_Duplicate_Click(object sender, RoutedEventArgs e)
 		{
+			DirectoryInfo dirInfo = new DirectoryInfo(System.IO.Path.GetDirectoryName(filePath));
+			string dirName = dirInfo.Name;
+			string newDirName = dirInfo.Parent.FullName + "\\" + dirName + " Copy";
+			int i = 0;
+			while (Directory.Exists(newDirName))
+			{
+				newDirName = dirInfo.Parent.FullName + "\\" + dirName + " Copy" + i.ToString();
+				i++;
+			}
+			Directory.CreateDirectory(newDirName);
 
+			string[] files = Directory.GetFiles(dirInfo.FullName);
+			foreach (string f in files)
+			{
+				File.Copy(f, newDirName+"\\" + System.IO.Path.GetFileName(f), true);
+			}
+
+			Directory.CreateDirectory(newDirName+"\\Textures");
+			files = Directory.GetFiles(dirInfo.FullName + "\\Textures");
+			foreach (string f in files)
+			{
+				File.Copy(f, newDirName + "\\Textures\\" + System.IO.Path.GetFileName(f));
+			}
+
+			BlockLabel bl = new BlockLabel();
+			bl.SetBlockName(blockName);
+			bl.filePath = newDirName + "\\" + blockName + ".block";
+			bl.parent = parent;
+			parent.Items.Add(bl);
 		}
 		private void Conext_Delete_Click(object sender, RoutedEventArgs e)
 		{

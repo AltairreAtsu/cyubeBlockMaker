@@ -117,8 +117,10 @@ namespace CyubeBlockMaker
 							BlockLabel label = new BlockLabel();
 							label.filePath = f;
 							label.SetBlockName(System.IO.Path.GetFileNameWithoutExtension(f));
-							
-							outlinerChildren[Directory.GetParent(d).FullName+"\\"].Items.Add(label);
+
+							TreeViewItem parentItem = outlinerChildren[Directory.GetParent(d).FullName + "\\"];
+							parentItem.Items.Add(label);
+							label.parent = parentItem;
 						}
 					}
 					DirSearch(d, outlinerChildren);
@@ -1158,8 +1160,6 @@ namespace CyubeBlockMaker
 			dataHasChanged = allowCrystalPlacement != AllowCrystalPlace_Checkbox.IsChecked;
 			allowCrystalPlacement = AllowCrystalPlace_Checkbox.IsChecked.Value;
 		}
-
-
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
