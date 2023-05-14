@@ -53,11 +53,7 @@ namespace CyubeBlockMaker
 		// Context Menu Event Handling
 		private void Conext_Open_Click(object sender, RoutedEventArgs e)
 		{
-
-		}
-		private void Conext_Export_Click(object sender, RoutedEventArgs e)
-		{
-
+			MainWindow.mainWindow.OpenBlock(filePath);
 		}
 		private void Conext_Duplicate_Click(object sender, RoutedEventArgs e)
 		{

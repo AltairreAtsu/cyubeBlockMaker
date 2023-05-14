@@ -186,10 +186,12 @@ namespace CyubeBlockMaker
 				return;
 			}
 
-			VistaFolderBrowserDialog folderBrowserDialog = new VistaFolderBrowserDialog();
-			if(folderBrowserDialog.ShowDialog() == true)
+			SaveFileDialog saveFileDialog = new SaveFileDialog();
+			saveFileDialog.Filter = "block | *.block";
+			saveFileDialog.InitialDirectory = WORKSPACE_ROOT;
+			if(saveFileDialog.ShowDialog() == true)
 			{
-				WriteData(folderBrowserDialog.SelectedPath, block);
+				WriteData(saveFileDialog.FileName, block);
 			}
 			dataHasChanged = false;
 		}
@@ -198,7 +200,8 @@ namespace CyubeBlockMaker
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 
-			JsonManager.WriteCustomBlockJson(path + System.IO.Path.DirectorySeparatorChar + block.Name + ".block", block);
+			JsonManager.WriteCustomBlockJson(path, block);
+			path = System.IO.Path.GetDirectoryName(path);
 
 			string textureDir = path + System.IO.Path.DirectorySeparatorChar + "Textures";
 			Directory.CreateDirectory(textureDir);
@@ -229,7 +232,7 @@ namespace CyubeBlockMaker
 				return;
 			}
 
-			saveDestination = System.IO.Path.GetDirectoryName(path);
+			saveDestination = path;
 
 			Name_TextBox.Text = block.Name;
 			CreatorName_TextBox.Text = block.CreatorName;
@@ -276,6 +279,7 @@ namespace CyubeBlockMaker
 			openFileDialog.Filter = "Block | *.block";
 			openFileDialog.Multiselect = false;
 			openFileDialog.Title = "Select a Block to open.";
+			openFileDialog.InitialDirectory = WORKSPACE_ROOT;
 
 
 			if(openFileDialog.ShowDialog() == true)

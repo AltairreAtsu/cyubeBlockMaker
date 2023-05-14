@@ -18,7 +18,6 @@
 	<UserControl.ContextMenu>
 		<ContextMenu>
 			<MenuItem Header="Open" Click="Conext_Open_Click"/>
-			<MenuItem Header="Export" Click="Conext_Export_Click"/>
 			<MenuItem Header="Duplicate" Click="Conext_Duplicate_Click"/>
 			<MenuItem Header="Delete" Click="Conext_Delete_Click"/>
 		</ContextMenu>
