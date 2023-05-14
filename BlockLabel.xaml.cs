@@ -62,13 +62,17 @@ namespace CyubeBlockMaker
 		}
 		private void Conext_Delete_Click(object sender, RoutedEventArgs e)
 		{
-			try
+			if(MessageBox.Show("Really delete " + blockName + "?", "Delete file confirmation", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
 			{
-				Directory.Delete(System.IO.Path.GetDirectoryName(filePath), true);
-				MainWindow.mainWindow.TryDeleteBlockLabel(this);
-			}catch (Exception ex)
-			{
-				MessageBox.Show(ex.Message);
+				try
+				{
+					Directory.Delete(System.IO.Path.GetDirectoryName(filePath), true);
+					MainWindow.mainWindow.TryDeleteBlockLabel(this);
+				}
+				catch (Exception ex)
+				{
+					MessageBox.Show(ex.Message);
+				}
 			}
 		}
 
