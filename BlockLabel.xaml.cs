@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Bson;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -61,7 +62,14 @@ namespace CyubeBlockMaker
 		}
 		private void Conext_Delete_Click(object sender, RoutedEventArgs e)
 		{
-
+			try
+			{
+				Directory.Delete(System.IO.Path.GetDirectoryName(filePath), true);
+				MainWindow.mainWindow.TryDeleteBlockLabel(this);
+			}catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message);
+			}
 		}
 
 		// Getters and Setters

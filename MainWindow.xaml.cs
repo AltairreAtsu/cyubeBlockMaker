@@ -135,7 +135,28 @@ namespace CyubeBlockMaker
 		{
 			return System.IO.Path.GetExtension(path) == ".block";
 		}
-
+		public bool TryDeleteBlockLabel(BlockLabel label)
+		{
+			return SearchTreeViewItem(Outliner.Items, label);
+		}
+		private bool SearchTreeViewItem(ItemCollection itemCollection, BlockLabel label)
+		{
+			foreach(Object obj in itemCollection)
+			{
+				if(obj is BlockLabel)
+				{
+					BlockLabel bl = (BlockLabel)obj;
+					itemCollection.Remove(bl);
+					return true;
+				}
+				if(obj is TreeViewItem)
+				{
+					TreeViewItem treeViewItem = (TreeViewItem)obj;
+					SearchTreeViewItem(treeViewItem.Items, label);
+				}
+			}
+			return false;
+		}
 
 		public void ResetWindow()
 		{
@@ -387,7 +408,18 @@ namespace CyubeBlockMaker
 			}
 
 		}
-		
+		private bool DiscardUnsavedData()
+		{
+			if (dataHasChanged)
+			{
+				if (MessageBox.Show("Close without saving?", "Warning", MessageBoxButton.OKCancel) == MessageBoxResult.Cancel)
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+
 		private ValidationResult ValidateExportData()
 		{
 			bool validationSucess = true;
@@ -1127,17 +1159,7 @@ namespace CyubeBlockMaker
 			allowCrystalPlacement = AllowCrystalPlace_Checkbox.IsChecked.Value;
 		}
 
-		private bool DiscardUnsavedData()
-		{
-			if (dataHasChanged)
-			{
-				if (MessageBox.Show("Close without saving?", "Warning", MessageBoxButton.OKCancel) == MessageBoxResult.Cancel)
-				{
-					return false;
-				}
-			}
-			return true;
-		}
+
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
