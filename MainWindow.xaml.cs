@@ -17,6 +17,9 @@ using Microsoft.Win32;
 using Ookii.Dialogs.Wpf;
 using Newtonsoft.Json.Bson;
 using System.Security.Cryptography;
+using System.IO.Enumeration;
+using System.Threading;
+using CyubeBlockMaker;
 
 namespace CyubeBlockMaker
 {
@@ -31,7 +34,9 @@ namespace CyubeBlockMaker
 		public static Brush mouseOverButtonBackground = Brushes.Lavender;
 		public static Brush mouseDownButtonBackground = Brushes.AliceBlue;
 
-		public static string WORKSPACE_ROOT = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\Workspace\\";
+		public static string WORKSPACE_ROOT = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\Workspace";
+		private FileSystemWatcher workSpaceWatcher;
+		private TreeNode fileTree;
 
 		// State Flags
 		private bool nameInvalidFlag = false;
@@ -63,6 +68,7 @@ namespace CyubeBlockMaker
 			mainWindow = this;
 			InitializeTextureTab();
 			InitializeWorkspace();
+			InitializeWatcher();
 		}
 
 		private void InitializeTextureTab()
@@ -73,37 +79,65 @@ namespace CyubeBlockMaker
 		}
 		private void InitializeWorkspace()
 		{
-			if (!Directory.Exists(WORKSPACE_ROOT))
+			if (!Directory.Exists(WORKSPACE_ROOT+"\\"))
 			{
-				Directory.CreateDirectory(WORKSPACE_ROOT);
+				Directory.CreateDirectory(WORKSPACE_ROOT+"\\");
 				// Workspace is empty
 				return;
 			}
 			Dictionary<string, TreeViewItem> outlinerChildren = new Dictionary<string, TreeViewItem>();
-			DirSearch(WORKSPACE_ROOT, outlinerChildren);
+			
+
+			DirSearch(WORKSPACE_ROOT+"\\", outlinerChildren);
 		}
 		private void DirSearch(string sDir, Dictionary<string, TreeViewItem> outlinerChildren)
 		{
 			try
 			{
+				TreeNode node;
 				TreeViewItem item = new TreeViewItem();
 				item.Header = new DirectoryInfo(sDir).Name;
-				if (sDir == WORKSPACE_ROOT)
+
+				if (sDir == WORKSPACE_ROOT+"\\")
 				{
+					// IF Root Start Tree
+					fileTree = new TreeNode(new FileNode(WORKSPACE_ROOT, true));
+					node = fileTree;
+
+
 					outlinerChildren.Add(sDir, item);
 					Outliner.Items.Add(item);
+
+					node.GetNodeItem().OutlinerEntry = item;
 				}
 				else
 				{
+					// Else Find Parent Node and Add node as child
+					var dirInfo = new DirectoryInfo(sDir);
+
+					if (dirInfo.Name == "Textures") return;
+
+					var parentNode = fileTree.GetNodeFromPath(dirInfo.Parent.FullName);
+					node = parentNode.AddChild(new FileNode(sDir, true));
+
+					// If BLock folder
 					bool isBlockFolder = false;
-					foreach(string d in Directory.GetDirectories(sDir))
+					foreach (string d in Directory.GetDirectories(sDir))
 					{
-						if(new DirectoryInfo(d).Name == "Textures") isBlockFolder = true;
+						if (new DirectoryInfo(d).Name == "Textures") isBlockFolder = true;
 					}
-					if(!isBlockFolder && new DirectoryInfo(sDir).Name != "Textures")
+					if (isBlockFolder)
 					{
-						outlinerChildren.Add (sDir+"\\", item);
-						outlinerChildren[Directory.GetParent(sDir).FullName+"\\"].Items.Add(item);
+						// Set Node value and carry on
+						node.GetNodeItem().containsBlock = true;
+					}
+					else
+					{
+						// Add it to the UI and add a corrosponding ref in the node
+						outlinerChildren.Add(sDir + "\\", item);
+						outlinerChildren[Directory.GetParent(sDir).FullName + "\\"].Items.Add(item);
+
+						node.GetNodeItem().OutlinerEntry = item;
 					}
 				}
 
@@ -111,9 +145,11 @@ namespace CyubeBlockMaker
 				{
 					foreach (string f in Directory.GetFiles(d))
 					{
-
 						if (PathIsBLockFile(f))
 						{
+							// If it's a block file add it to the node tree
+							var child = node.AddChild(new FileNode(f, false));
+
 							BlockLabel label = new BlockLabel();
 							label.filePath = f;
 							label.SetBlockName(System.IO.Path.GetFileNameWithoutExtension(f));
@@ -121,6 +157,8 @@ namespace CyubeBlockMaker
 							TreeViewItem parentItem = outlinerChildren[Directory.GetParent(d).FullName + "\\"];
 							parentItem.Items.Add(label);
 							label.parent = parentItem;
+							// And set a ref to it's element in the UI
+							child.GetNodeItem().OutlinerEntry = label;
 						}
 					}
 					DirSearch(d, outlinerChildren);
@@ -131,7 +169,6 @@ namespace CyubeBlockMaker
 				MessageBox.Show("Error Reading Workspace DirectorY! " + excpt.Message);
 				return;
 			}
-			return;
 		}
 		private bool PathIsBLockFile(string path)
 		{
@@ -159,6 +196,89 @@ namespace CyubeBlockMaker
 			}
 			return false;
 		}
+
+		private void InitializeWatcher()
+		{
+			workSpaceWatcher = new FileSystemWatcher(WORKSPACE_ROOT+"\\");
+			workSpaceWatcher.IncludeSubdirectories = true;
+			workSpaceWatcher.Created += OnCreated;
+			workSpaceWatcher.Renamed += OnRenamed;
+			workSpaceWatcher.Deleted += OnDeleted;
+			workSpaceWatcher.EnableRaisingEvents = true;
+		}
+		private void OnCreated(object sender, FileSystemEventArgs e)
+		{
+			this.Dispatcher.BeginInvoke(UIOnCreated, System.Windows.Threading.DispatcherPriority.Normal, e);
+		}
+		private void OnRenamed(object sender, RenamedEventArgs e)
+		{
+			this.Dispatcher.BeginInvoke(UIOnRenamed, System.Windows.Threading.DispatcherPriority.Normal, e);
+		}
+		private void OnDeleted(object sender, FileSystemEventArgs e)
+		{
+			// If a node was deleted, Search the tree for the path.
+			// If it was a dir: remove the dir from the node tree and Outliner and remove any children it had
+			// If it was a file: remove the corrosponding block label from the tree
+		}
+
+		private void UIOnCreated(FileSystemEventArgs e)
+		{
+			var dirPath = System.IO.Path.GetDirectoryName(e.FullPath);
+			var dirInfo = new DirectoryInfo(dirPath);
+			var parrentNode = fileTree.GetNodeFromPath(dirPath);
+			TreeViewItem parentOutlinerItem = (TreeViewItem)parrentNode.GetNodeItem().OutlinerEntry;
+			bool isDir = System.IO.Path.GetExtension(e.FullPath) == string.Empty;
+
+
+			if (isDir)
+			{
+				if (new DirectoryInfo(e.FullPath).Name == "Textures") return;
+ 				var child = parrentNode.AddChild(new FileNode(e.FullPath, true));
+				TreeViewItem newHeaderItem = new TreeViewItem();
+				newHeaderItem.Header = dirInfo.Name;
+				parentOutlinerItem.Items.Add(newHeaderItem);
+				child.GetNodeItem().OutlinerEntry = newHeaderItem;
+			}
+			else
+			{
+				if(System.IO.Path.GetExtension(e.FullPath) == ".block")
+				{
+					if (fileTree.GetNodeFromPath(e.FullPath) != null) return;
+					TreeViewItem parentParent = (TreeViewItem)parentOutlinerItem.Parent;
+					parentParent.Items.Remove(parentOutlinerItem);
+					parrentNode.GetNodeItem().containsBlock = true;
+					var child = parrentNode.AddChild(new FileNode(e.FullPath,true));
+
+					BlockLabel newLabel = new BlockLabel();
+					newLabel.filePath = e.FullPath;
+					newLabel.SetBlockName(System.IO.Path.GetFileNameWithoutExtension(e.FullPath));
+					parentParent.Items.Add((newLabel));
+					child.GetNodeItem().OutlinerEntry = newLabel;
+				}
+			}
+
+		}
+		private void UIOnRenamed(RenamedEventArgs e)
+		{
+			var node = fileTree.GetNodeFromPath(e.OldFullPath);
+			var nodeItem = node.GetNodeItem();
+			var item = (TreeViewItem)nodeItem.OutlinerEntry;
+
+			nodeItem.path = e.FullPath;
+			if (nodeItem.isDirectory)
+			{
+				TreeViewItem items = (TreeViewItem)nodeItem.OutlinerEntry;
+				var dirInfo = new DirectoryInfo(e.FullPath);
+				items.Header = dirInfo.Name;
+			}
+			else
+			{
+				BlockLabel label = (BlockLabel)node.GetNodeItem().OutlinerEntry;
+				label.filePath = e.FullPath;
+				label.SetBlockName(System.IO.Path.GetFileNameWithoutExtension(e.FullPath));
+			}
+		}
+
 
 		public void ResetWindow()
 		{
@@ -211,7 +331,7 @@ namespace CyubeBlockMaker
 
 			SaveFileDialog saveFileDialog = new SaveFileDialog();
 			saveFileDialog.Filter = "block | *.block";
-			saveFileDialog.InitialDirectory = WORKSPACE_ROOT;
+			saveFileDialog.InitialDirectory = WORKSPACE_ROOT+"\\";
 			if(saveFileDialog.ShowDialog() == true)
 			{
 				WriteData(saveFileDialog.FileName, block);
@@ -302,7 +422,7 @@ namespace CyubeBlockMaker
 			openFileDialog.Filter = "Block | *.block";
 			openFileDialog.Multiselect = false;
 			openFileDialog.Title = "Select a Block to open.";
-			openFileDialog.InitialDirectory = WORKSPACE_ROOT;
+			openFileDialog.InitialDirectory = WORKSPACE_ROOT+"\\";
 
 
 			if(openFileDialog.ShowDialog() == true)
@@ -1180,5 +1300,105 @@ public struct ValidationResult
 	{
 		this.validationErrors = validationErrors;
 		this.validationSucess = validationSucess;
+	}
+}
+
+public class TreeNode
+{
+	TreeNode Parent;
+	List<TreeNode> Children = new List<TreeNode>();
+
+	FileNode Item { get; set; }
+
+	public TreeNode(FileNode item)
+	{
+		Item = item;
+	}
+	public TreeNode(FileNode item, TreeNode parent)
+	{
+		Item = item;
+		Parent = parent;
+	}
+
+	public TreeNode AddChild(FileNode item)
+	{
+		TreeNode nodeItem = new TreeNode(item, this);
+		Children.Add(nodeItem);
+		return nodeItem;
+	}
+
+	public bool TreeContains(FileNode item)
+	{
+		if(this.Item.Equals(item) ) return true;
+		foreach(TreeNode node in Children)
+		{
+			if(node.TreeContains(item)) return true;
+		}
+		return false;
+	}
+
+	public TreeNode GetNodeFromPath(string path)
+	{
+		if (Item.path == path)
+		{
+			return this;
+		}
+		foreach(TreeNode node in Children)
+		{
+			var childNode = node.GetNodeFromPath(path);
+			if (childNode != null)
+			{
+				return childNode;
+			}
+		}
+		return null;
+	}
+
+	public List<string> GetAllPaths(List<string> paths)
+	{
+		paths.Add(this.Item.path);
+
+		foreach(TreeNode node in Children)
+		{
+			node.GetAllPaths(paths);
+		}
+		return paths;
+	}
+
+	public TreeNode GetParent()
+	{
+		return Parent;
+	}
+	public FileNode GetNodeItem()
+	{
+		return Item;
+	}
+}
+
+public class FileNode
+{
+	public string path;
+	public bool isDirectory = false;
+	public bool containsBlock = false;
+	public Object OutlinerEntry;
+
+	public FileNode(string path, bool isDirectory)
+	{
+		this.path = path;
+		this.isDirectory = isDirectory;
+	}
+
+	public bool Equals(FileNode node)
+	{
+		return this.path.Equals(node.path);
+	}
+
+	public bool OutlinerEntryIsTreeViewItem()
+	{
+		return OutlinerEntry is TreeViewItem;
+	}
+	public bool OutlinerEntryIsBlockLabel()
+	{
+		return OutlinerEntry is BlockLabel;
 	}
 }
