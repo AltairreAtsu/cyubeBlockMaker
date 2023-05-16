@@ -90,14 +90,7 @@ namespace CyubeBlockMaker
 
 			fileTree = FileTreeBuilder.CompileFileTree(WORKSPACE_ROOT+"\\", WORKSPACE_NAME, WORKSPACE_ROOT, Outliner);
 		}
-		// Move to a location that makes more sense
-		public string GetWorkspaceRelativePath(string originalPath)
-		{
-			if (originalPath == WORKSPACE_ROOT) return "Workspace";
 
-			string newPath = "Workspace\\";
-			return newPath += System.IO.Path.GetRelativePath(WORKSPACE_ROOT, originalPath);
-		}
 
 		public bool TryDeleteBlockLabel(BlockLabel label)
 		{
@@ -279,6 +272,7 @@ namespace CyubeBlockMaker
 			UniqueIDToDrop_TextBox.BorderBrush = SystemColors.ControlDarkBrush;
 		}
 
+		#region FileOptionMethods
 		public void Save(bool forceDialog)
 		{
 			ValidationResult result = ValidateSaveData();
@@ -508,7 +502,28 @@ namespace CyubeBlockMaker
 			}
 			return true;
 		}
+		private CustomBlock CompileBlock()
+		{
+			CustomBlock block = new CustomBlock();
+			block.Name = Name_TextBox.Text;
+			block.CreatorName = CreatorName_TextBox.Text;
+			block.CategoryName = Category_TextBox.Text;
+			block.UniqueID = uID;
+			block.Yield = (int)Math.Round(Yield_Slider.Value);
+			block.SimilarTo = SimliarTo_ComboBox.SelectedIndex + 1;
+			block.AnimationSpeed = (int)Math.Round(AnimationSpeed_Slider.Value);
+			block.UniqueIDToDrop = UIDToDrop;
+			block.Recipe = recipe;
+			block.Textures = new TextureSettings();
+			block.Textures.Mode = TextureMode_ComboBox.SelectedIndex + 1;
+			block.Textures.WithGlowMap = glowMap;
+			block.Textures.WithNormals = normalMap;
 
+			return block;
+		}
+		#endregion
+
+		#region DataValidation
 		private ValidationResult ValidateExportData()
 		{
 			bool validationSucess = true;
@@ -700,32 +715,9 @@ namespace CyubeBlockMaker
 			}
 			return true;
 		}
+		#endregion
 
-		private CustomBlock CompileBlock()
-		{
-			CustomBlock block = new CustomBlock();
-			block.Name = Name_TextBox.Text;
-			block.CreatorName = CreatorName_TextBox.Text;
-			block.CategoryName = Category_TextBox.Text;
-			block.UniqueID = uID;
-			block.Yield = (int)Math.Round(Yield_Slider.Value);
-			block.SimilarTo = SimliarTo_ComboBox.SelectedIndex + 1;
-			block.AnimationSpeed = (int)Math.Round(AnimationSpeed_Slider.Value);
-			block.UniqueIDToDrop = UIDToDrop;
-			block.Recipe = recipe;
-			block.Textures = new TextureSettings();
-			block.Textures.Mode = TextureMode_ComboBox.SelectedIndex + 1;
-			block.Textures.WithGlowMap = glowMap;
-			block.Textures.WithNormals = normalMap;
-
-			return block;
-		}
-
-		public void DisplayErrorMessage(string message)
-		{
-			MessageBox.Show(message);
-		}
-
+		#region TextBoxEventHandling
 		// Numeric Enforcement Event Handlers
 		private void Yield_TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
 		{
@@ -825,8 +817,9 @@ namespace CyubeBlockMaker
 				CategorySuggestionLabel.Visibility = Visibility.Visible;
 			}
 		}
+		#endregion
 
-		// Texture Panel Mangement
+		#region TexturePanelMangement
 		private void TextureMode_ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			//dataHasChanged = textureMode == TextureMode_ComboBox.SelectedIndex;
@@ -1019,8 +1012,9 @@ namespace CyubeBlockMaker
 				}
 			}
 		}
-		
-		// Recipe Import
+		#endregion
+
+		#region RecipeButtonHandling
 		private void ImportRecipe_Click(object sender, RoutedEventArgs e)
 		{
 			OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -1081,8 +1075,9 @@ namespace CyubeBlockMaker
 				MessageBox.Show("Could no locate the last exported recipe file.");
 			}
 		}
+		#endregion
 
-		// DDS Conversion
+		#region DDSConversionParams
 		private string GetAlbedoExportCLIParams(string sourceImagePath, string targetImagePath)
 		{
 			return "-i " + sourceImagePath + " -o " + targetImagePath + " -nout -m -f BC3,UBN,sRGB -q pvrtcbest";
@@ -1095,7 +1090,9 @@ namespace CyubeBlockMaker
 		{
 			return "-i " + sourceImagePath + " -o " + targetImagePath + " -nout -m -f BC1,UBN,sRGB -q pvrtcbest";
 		}
+		#endregion
 
+		#region ButtonEventHandling
 		// New Block Button Handling
 		private void NewBlockButton_MouseEnter(object sender, MouseEventArgs e)
 		{
@@ -1215,7 +1212,9 @@ namespace CyubeBlockMaker
 			int rand = RandomNumberGenerator.GetInt32(0, 214748364);
 			UniqueID_Textbox.Text = rand.ToString();
 		}
-		
+		#endregion
+
+		#region DataChangeDetectionEvents
 		// Misc Event Handlers
 		private void Yield_Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
 		{
@@ -1252,7 +1251,21 @@ namespace CyubeBlockMaker
 			dataHasChanged = allowCrystalPlacement != AllowCrystalPlace_Checkbox.IsChecked;
 			allowCrystalPlacement = AllowCrystalPlace_Checkbox.IsChecked.Value;
 		}
+		#endregion
 
+		// Move to a location that makes more sense
+		public string GetWorkspaceRelativePath(string originalPath)
+		{
+			if (originalPath == WORKSPACE_ROOT) return "Workspace";
+
+			string newPath = "Workspace\\";
+			return newPath += System.IO.Path.GetRelativePath(WORKSPACE_ROOT, originalPath);
+		}
+
+		public void DisplayErrorMessage(string message)
+		{
+			MessageBox.Show(message);
+		}
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
 			if(!DiscardUnsavedData()) 
