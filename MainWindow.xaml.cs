@@ -78,6 +78,7 @@ namespace CyubeBlockMaker
 			AddTexturePanel("all_small", TexturePanelType.Albedo_Small);
 			AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
 		}
+		
 		private void InitializeWorkspace()
 		{
 			if (!Directory.Exists(WORKSPACE_ROOT+"\\"))
@@ -87,109 +88,32 @@ namespace CyubeBlockMaker
 				return;
 			}
 
-			CompileFileTree(WORKSPACE_ROOT+"\\");
+			fileTree = FileTreeBuilder.CompileFileTree(WORKSPACE_ROOT+"\\", WORKSPACE_NAME, WORKSPACE_ROOT, Outliner);
 		}
-		private void CompileFileTree(string rootDir)
-		{
-			Dictionary<string, TreeViewItem> outlinerChildren = new Dictionary<string, TreeViewItem>();
-			TreeViewItem item = new TreeViewItem();
-
-			fileTree = new TreeNode(new FileNode(WORKSPACE_NAME, true));
-
-			outlinerChildren.Add(WORKSPACE_ROOT+"\\", item);
-			item.Header = "Workspace";
-			item.IsExpanded = true;
-			Outliner.Items.Add(item);
-
-			fileTree.Item.OutlinerEntry = item;
-
-			// Begin Dir Search
-			DirSearch(WORKSPACE_ROOT + "\\", outlinerChildren);
-		}
-		private void DirSearch(string sDir, Dictionary<string, TreeViewItem> outlinerChildren)
-		{
-			try
-			{
-				TreeNode node = null;
-				TreeViewItem item = new TreeViewItem();
-
-				foreach (string d in Directory.GetDirectories(sDir))
-				{
-					var dirInfo = new DirectoryInfo(d);
-					if (dirInfo.Name == "Textures") return;
-
-					var parentNode = fileTree.GetNodeFromPath(GetWorkspaceRelativePath(dirInfo.Parent.FullName));
-					node = parentNode.AddChild(new FileNode(dirInfo.Name, true));
-
-					bool isBlockFolder = false;
-					foreach (string dd in Directory.GetDirectories(d))
-					{
-						if (new DirectoryInfo(dd).Name == "Textures") isBlockFolder = true;
-					}
-					if (isBlockFolder)
-					{
-						node.Item.containsBlock = true;
-					}
-					else
-					{
-						item.Header = dirInfo.Name;
-						outlinerChildren.Add(d + "\\", item);
-						outlinerChildren[Directory.GetParent(d).FullName + "\\"].Items.Add(item);
-
-						node.Item.OutlinerEntry = item;
-					}
-
-					foreach (string f in Directory.GetFiles(d))
-					{
-						if (PathIsBLockFile(f))
-						{
-							string fileName = System.IO.Path.GetFileNameWithoutExtension(f);
-							var child = node.AddChild(new FileNode(fileName, false));
-
-							BlockLabel label = new BlockLabel();
-							label.filePath = f;
-							label.SetBlockName(fileName);
-
-							TreeViewItem parentItem = outlinerChildren[Directory.GetParent(d).FullName + "\\"];
-							parentItem.Items.Add(label);
-							child.Item.OutlinerEntry = label;
-						}
-					}
-					DirSearch(d, outlinerChildren);
-				}
-			}
-			catch (System.Exception excpt)
-			{
-				MessageBox.Show("Error Reading Workspace Directory! " + excpt.Message);
-				return;
-			}
-		}
-		private string GetWorkspaceRelativePath(string originalPath)
+		// Move to a location that makes more sense
+		public string GetWorkspaceRelativePath(string originalPath)
 		{
 			if (originalPath == WORKSPACE_ROOT) return "Workspace";
-			
+
 			string newPath = "Workspace\\";
 			return newPath += System.IO.Path.GetRelativePath(WORKSPACE_ROOT, originalPath);
 		}
-		private bool PathIsBLockFile(string path)
-		{
-			return System.IO.Path.GetExtension(path) == ".block";
-		}
+
 		public bool TryDeleteBlockLabel(BlockLabel label)
 		{
 			return SearchTreeViewItem(Outliner.Items, label);
 		}
 		private bool SearchTreeViewItem(ItemCollection itemCollection, BlockLabel label)
 		{
-			foreach(Object obj in itemCollection)
+			foreach (Object obj in itemCollection)
 			{
-				if(obj is BlockLabel)
+				if (obj is BlockLabel)
 				{
 					BlockLabel bl = (BlockLabel)obj;
 					itemCollection.Remove(bl);
 					return true;
 				}
-				if(obj is TreeViewItem)
+				if (obj is TreeViewItem)
 				{
 					TreeViewItem treeViewItem = (TreeViewItem)obj;
 					SearchTreeViewItem(treeViewItem.Items, label);
@@ -795,6 +719,11 @@ namespace CyubeBlockMaker
 			block.Textures.WithNormals = normalMap;
 
 			return block;
+		}
+
+		public void DisplayErrorMessage(string message)
+		{
+			MessageBox.Show(message);
 		}
 
 		// Numeric Enforcement Event Handlers
