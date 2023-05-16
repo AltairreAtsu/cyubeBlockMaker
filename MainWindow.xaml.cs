@@ -35,6 +35,7 @@ namespace CyubeBlockMaker
 		public static Brush mouseDownButtonBackground = Brushes.AliceBlue;
 
 		public static string WORKSPACE_ROOT = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\Workspace";
+		public static string WORKSPACE_NAME = "Workspace";
 		private FileSystemWatcher workSpaceWatcher;
 		private TreeNode fileTree;
 
@@ -93,10 +94,11 @@ namespace CyubeBlockMaker
 			Dictionary<string, TreeViewItem> outlinerChildren = new Dictionary<string, TreeViewItem>();
 			TreeViewItem item = new TreeViewItem();
 
-			fileTree = new TreeNode(new FileNode(WORKSPACE_ROOT, true));
+			fileTree = new TreeNode(new FileNode(WORKSPACE_NAME, true));
 
 			outlinerChildren.Add(WORKSPACE_ROOT+"\\", item);
 			item.Header = "Workspace";
+			item.IsExpanded = true;
 			Outliner.Items.Add(item);
 
 			fileTree.Item.OutlinerEntry = item;
@@ -115,8 +117,9 @@ namespace CyubeBlockMaker
 				{
 					var dirInfo = new DirectoryInfo(d);
 					if (dirInfo.Name == "Textures") return;
-					var parentNode = fileTree.GetNodeFromPath(dirInfo.Parent.FullName);
-					node = parentNode.AddChild(new FileNode(d, true));
+
+					var parentNode = fileTree.GetNodeFromPath(GetWorkspaceRelativePath(dirInfo.Parent.FullName));
+					node = parentNode.AddChild(new FileNode(dirInfo.Name, true));
 
 					bool isBlockFolder = false;
 					foreach (string dd in Directory.GetDirectories(d))
@@ -140,11 +143,12 @@ namespace CyubeBlockMaker
 					{
 						if (PathIsBLockFile(f))
 						{
-							var child = node.AddChild(new FileNode(f, false));
+							string fileName = System.IO.Path.GetFileNameWithoutExtension(f);
+							var child = node.AddChild(new FileNode(fileName, false));
 
 							BlockLabel label = new BlockLabel();
 							label.filePath = f;
-							label.SetBlockName(System.IO.Path.GetFileNameWithoutExtension(f));
+							label.SetBlockName(fileName);
 
 							TreeViewItem parentItem = outlinerChildren[Directory.GetParent(d).FullName + "\\"];
 							parentItem.Items.Add(label);
@@ -159,6 +163,13 @@ namespace CyubeBlockMaker
 				MessageBox.Show("Error Reading Workspace Directory! " + excpt.Message);
 				return;
 			}
+		}
+		private string GetWorkspaceRelativePath(string originalPath)
+		{
+			if (originalPath == WORKSPACE_ROOT) return "Workspace";
+			
+			string newPath = "Workspace\\";
+			return newPath += System.IO.Path.GetRelativePath(WORKSPACE_ROOT, originalPath);
 		}
 		private bool PathIsBLockFile(string path)
 		{
@@ -253,7 +264,7 @@ namespace CyubeBlockMaker
 			var node = fileTree.GetNodeFromPath(e.OldFullPath);
 			var nodeItem = node.Item;
 
-			nodeItem.path = e.FullPath;
+			nodeItem.name = e.FullPath;
 			if (nodeItem.isDirectory)
 			{
 				if (node.Item.containsBlock) return;
@@ -302,10 +313,10 @@ namespace CyubeBlockMaker
 				//var parentNode = node.GetParent();
 				var parentNode = fileTree.GetNodeFromPath(System.IO.Path.GetDirectoryName(e.FullPath));
 				parentNode.Item.containsBlock = false;
-				MessageBox.Show(node.Item.path);
+				MessageBox.Show(node.Item.name);
 				
 				TreeViewItem newHeader = new TreeViewItem();
-				newHeader.Header = new DirectoryInfo( parentNode.Item.path).Name;
+				newHeader.Header = new DirectoryInfo( parentNode.Item.name).Name;
 				labelParent.Items.Add(newHeader);
 
 				fileTree.RemoveNodeFromTree(node);

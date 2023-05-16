@@ -4,20 +4,20 @@ using CyubeBlockMaker;
 
 public class FileNode
 {
-	public string path;
+	public string name;
 	public bool isDirectory = false;
 	public bool containsBlock = false;
 	public Object OutlinerEntry;
 
-	public FileNode(string path, bool isDirectory)
+	public FileNode(string name, bool isDirectory)
 	{
-		this.path = path;
+		this.name = name;
 		this.isDirectory = isDirectory;
 	}
 
 	public bool Equals(FileNode node)
 	{
-		return this.path.Equals(node.path);
+		return this.name.Equals(node.name);
 	}
 
 	public bool OutlinerEntryIsTreeViewItem()

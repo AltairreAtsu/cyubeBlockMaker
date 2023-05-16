@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Windows.Forms;
 
 public class TreeNode
 {
@@ -26,19 +27,43 @@ public class TreeNode
 
 	public TreeNode GetNodeFromPath(string path)
 	{
-		if (Item.path == path)
+		string[] pathSegments = path.Split("\\");
+
+		if( (pathSegments.Length == 1) &&
+			(pathSegments[0] == Item.name) )
 		{
 			return this;
 		}
-		foreach(TreeNode node in Children)
+		else
 		{
-			var childNode = node.GetNodeFromPath(path);
-			if (childNode != null)
+			if (pathSegments[0] == Item.name)
 			{
-				return childNode;
+				foreach (TreeNode node in Children)
+				{
+					if (pathSegments[1] == node.Item.name)
+					{
+						return node.GetNodeFromPath(RecompilePathWithoutCurrentNode(pathSegments));
+					}
+				}
+			}
+			else
+			{
+				return null;
 			}
 		}
 		return null;
+	}
+
+	private string RecompilePathWithoutCurrentNode(string[] splitPath)
+	{
+		string path = "";
+		for(int i = 1; i < splitPath.Length; i++)
+		{
+			path += splitPath[i];
+			if(i != splitPath.Length - 1)
+				path += "\\";
+		}
+		return path;
 	}
 
 	public bool RemoveNodeFromTree(string path)
@@ -68,7 +93,7 @@ public class TreeNode
 		{
 			path += "_";
 		}
-		treePrinter.nodePaths.Add(path + Item.path);
+		treePrinter.nodePaths.Add(path + Item.name);
 		treePrinter.depth++;
 		foreach (TreeNode node in Children)
 		{
