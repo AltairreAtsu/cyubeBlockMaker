@@ -94,7 +94,15 @@ namespace CyubeBlockMaker
 			{
 				try
 				{
+					if (MainWindow.mainWindow.BlockIsCurrentlyOpen(filePath))
+					{
+						MainWindow.mainWindow.ResetWindow();
+						GC.Collect();
+						GC.WaitForPendingFinalizers();
+					}
 					Directory.Delete(System.IO.Path.GetDirectoryName(filePath), true);
+					string texturesPath = System.IO.Path.GetDirectoryName(filePath) + "\\Textures";
+					if (Directory.Exists(texturesPath)) Directory.Delete(texturesPath);
 				}
 				catch (Exception ex)
 				{

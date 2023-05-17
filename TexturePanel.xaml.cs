@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using SharpVectors.Renderers.Gdi;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -84,7 +85,9 @@ namespace CyubeBlockMaker
 			if (System.IO.Path.GetExtension(filePath).Equals(".png"))
 			{
 				TextureURI = new Uri(filePath);
-				image = new BitmapImage(TextureURI);
+				var bi = new BitmapImage(TextureURI);
+				bi.CacheOption = BitmapCacheOption.None;
+				image = bi;
 				TexturePreview_Image.Source = image;
 
 				if (!ValidateImageSize()) WarnUserInvalidImageSize();

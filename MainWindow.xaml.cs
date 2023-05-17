@@ -556,6 +556,11 @@ namespace CyubeBlockMaker
 
 			return block;
 		}
+
+		public bool BlockIsCurrentlyOpen(string path)
+		{
+			return path == saveDestination;
+		}
 		#endregion
 
 		#region DataValidation
@@ -860,7 +865,7 @@ namespace CyubeBlockMaker
 			//dataHasChanged = textureMode == TextureMode_ComboBox.SelectedIndex;
 
 			if (TextureTabWrapPanel == null) return;
-			TextureTabWrapPanel.Children.Clear();
+			ClearTextureWrapPanel();
 			texturePanels.Clear();
 
 			if(TextureMode_ComboBox.SelectedIndex == 0)
@@ -921,6 +926,16 @@ namespace CyubeBlockMaker
 				if (WithGlowMaps_CheckBox.IsChecked == true)
 					AddGlowMapPanels(TextureMode_ComboBox.SelectedIndex);
 			}
+		}
+
+		private void ClearTextureWrapPanel()
+		{
+			foreach(TexturePanel panel in TextureTabWrapPanel.Children)
+			{
+				panel.TextureURI = null;
+				panel.SetImageSource(null);
+			}
+			TextureTabWrapPanel.Children.Clear();
 		}
 		private void AddNormalMapPanels(int textureMode)
 		{
