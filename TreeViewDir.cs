@@ -17,25 +17,30 @@ namespace CyubeBlockMaker
 
 		public TreeViewDir(string dirPath)
 		{
-			if (dirPath == MainWindow.WORKSPACE_ROOT) return;
 			this.dirPath = dirPath;
+			ContextMenu contextMenu = new ContextMenu();
+			this.ContextMenu = contextMenu;
+
+			MenuItem createOption = new MenuItem();
+			createOption.Header = "New";
+			createOption.Click += CreateContext_Click;
+			contextMenu.Items.Add(createOption);
+
+			if (dirPath == MainWindow.WORKSPACE_ROOT) return;
 			MenuItem renameOption = new MenuItem();
 			renameOption.Header = "Rename";
 			renameOption.Click += RenameContext_Click;
+			contextMenu.Items.Add(renameOption);
 
 			MenuItem deleteOption = new MenuItem();
 			deleteOption.Header = "Delete";
 			deleteOption.Click += DeleteContext_Click;
-
-			ContextMenu contextMenu = new ContextMenu();
-			contextMenu.Items.Add(renameOption);
 			contextMenu.Items.Add(deleteOption);
-			this.ContextMenu = contextMenu;
 		}
 
 		public void RenameContext_Click(object sender, RoutedEventArgs e)
 		{
-			TextPrompt textPrompt = new TextPrompt();
+			TextPrompt textPrompt = new TextPrompt("Rename " + Header, "Enter a new name:");
 			var result = textPrompt.ShowDialog();
 			if(result == true)
 			{
@@ -61,6 +66,16 @@ namespace CyubeBlockMaker
 				{
 					MessageBox.Show(ex.Message);
 				}
+			}
+		}
+
+		public void CreateContext_Click (object sender, RoutedEventArgs e)
+		{
+			TextPrompt textPrompt = new TextPrompt("Create a Directory", "Enter a name:");
+			var result = textPrompt.ShowDialog();
+			if(result == true)
+			{
+				Directory.CreateDirectory(dirPath+"\\"+textPrompt.UserText);
 			}
 		}
 	}

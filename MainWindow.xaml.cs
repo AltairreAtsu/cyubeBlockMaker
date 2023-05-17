@@ -53,7 +53,6 @@ namespace CyubeBlockMaker
 
 		private bool allowMove = true;
 		private bool allowCrystalPlacement = true;
-		private int textureMode = 0;
 		private int similiarTo = 0;
 		private int animationSpeed = 0;
 		private int yield = 0;
@@ -303,6 +302,7 @@ namespace CyubeBlockMaker
 			UniqueID_Textbox.BorderBrush = SystemColors.ControlDarkBrush;
 			uniqueIDToDropInvalidFlag = false;
 			UniqueIDToDrop_TextBox.BorderBrush = SystemColors.ControlDarkBrush;
+			saveDestination = "";
 		}
 
 		#region FileOptionMethods
