@@ -26,6 +26,9 @@ namespace CyubeBlockMaker
 		public string filePath;
 		public TreeViewItem parent;
 		
+		private int sortPriority = 1;
+		public int SortPriority { get { return sortPriority; } }
+		
 		public BlockLabel()
 		{
 			InitializeComponent();

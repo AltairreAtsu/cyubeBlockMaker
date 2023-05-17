@@ -13,8 +13,8 @@ namespace CyubeBlockMaker
 	{
 		public static TreeNode CompileFileTree(string rootDir, string WORKSPACE_NAME, string WORKSPACE_ROOT, TreeView outliner)
 		{
-			Dictionary<string, TreeViewItem> outlinerChildren = new Dictionary<string, TreeViewItem>();
-			TreeViewItem item = new TreeViewItem();
+			Dictionary<string, TreeViewDir> outlinerChildren = new Dictionary<string, TreeViewDir>();
+			TreeViewDir item = new TreeViewDir();
 
 			TreeNode fileTree = new TreeNode(new FileNode(WORKSPACE_NAME, true));
 
@@ -30,7 +30,7 @@ namespace CyubeBlockMaker
 
 			return fileTree;
 		}
-		private static void DirSearch(string sDir, Dictionary<string, TreeViewItem> outlinerChildren, TreeNode fileTree)
+		private static void DirSearch(string sDir, Dictionary<string, TreeViewDir> outlinerChildren, TreeNode fileTree)
 		{
 			try
 			{
@@ -38,7 +38,7 @@ namespace CyubeBlockMaker
 
 				foreach (string d in Directory.GetDirectories(sDir))
 				{
-					TreeViewItem item = new TreeViewItem();
+					TreeViewDir item = new TreeViewDir();
 					var dirInfo = new DirectoryInfo(d);
 					if (dirInfo.Name == "Textures") return;
 
@@ -74,7 +74,7 @@ namespace CyubeBlockMaker
 							label.filePath = f;
 							label.SetBlockName(Path.GetFileNameWithoutExtension(f));
 
-							TreeViewItem parentItem = outlinerChildren[Directory.GetParent(d).FullName + "\\"];
+							TreeViewDir parentItem = outlinerChildren[Directory.GetParent(d).FullName + "\\"];
 							parentItem.Items.Add(label);
 							child.Item.OutlinerEntry = label;
 						}

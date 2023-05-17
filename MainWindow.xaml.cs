@@ -87,8 +87,26 @@ namespace CyubeBlockMaker
 				// Workspace is empty
 				return;
 			}
-
 			fileTree = FileTreeBuilder.CompileFileTree(WORKSPACE_ROOT+"\\", WORKSPACE_NAME, WORKSPACE_ROOT, Outliner);
+			SortOutliner((TreeViewDir)Outliner.Items.GetItemAt(0));
+		}
+		private void SortOutliner(TreeViewDir rootItem)
+		{
+			rootItem.Items.SortDescriptions.Clear();
+			rootItem.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription("SortPriority", System.ComponentModel.ListSortDirection.Ascending));
+			rootItem.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription("Header", System.ComponentModel.ListSortDirection.Ascending));
+
+			rootItem.Items.Refresh();
+			foreach (object item in rootItem.Items)
+			{
+				if(item is TreeViewDir)
+					SortOutliner((TreeViewDir)item);
+			}
+		}
+		private void RefreshOutliner()
+		{
+			Outliner.Items.Clear();
+			fileTree = FileTreeBuilder.CompileFileTree(WORKSPACE_ROOT + "\\", WORKSPACE_NAME, WORKSPACE_ROOT, Outliner);
 		}
 
 		// File System Watcher
@@ -121,29 +139,35 @@ namespace CyubeBlockMaker
 
 			string parentNodePath = GetWorkspaceRelativePath(dirPath);
 			var parrentNode = fileTree.GetNodeFromPath(parentNodePath);
-
+			
 			bool isDir = System.IO.Path.GetExtension(e.FullPath) == string.Empty;
 
 			if (isDir)
 			{
 				AddHeaderNode(e.FullPath, parrentNode);
+				string[] dirs = Directory.GetDirectories(dirPath);
+				string[] files = Directory.GetFiles(dirPath);
+				if(dirs.Length > 0 || files.Length > 0)
+				{
+					RefreshOutliner();
+				}
 			}
 			else
 			{
 				AddFileNode(e.FullPath, parrentNode);
 			}
-
+			SortOutliner((TreeViewDir)Outliner.Items.GetItemAt(0));
 		}
 		private void AddHeaderNode(string dirPath, TreeNode parentNode)
 		{
 			var dirInfo = new DirectoryInfo(dirPath);
 			if (dirInfo.Name == "Textures") return;
 
-			TreeViewItem parentOutlinerItem = (TreeViewItem)parentNode.Item.OutlinerEntry;
+			TreeViewDir parentOutlinerItem = (TreeViewDir)parentNode.Item.OutlinerEntry;
 
 
 			var child = parentNode.AddChild(new FileNode(dirInfo.Name, true));
-			TreeViewItem newHeaderItem = new TreeViewItem();
+			TreeViewDir newHeaderItem = new TreeViewDir();
 			newHeaderItem.Header = dirInfo.Name;
 			parentOutlinerItem.Items.Add(newHeaderItem);
 			child.Item.OutlinerEntry = newHeaderItem;
@@ -156,7 +180,7 @@ namespace CyubeBlockMaker
 			if (fileTree.GetNodeFromPath(nodePath) != null) return;
 
 			// Find and Remove the header
-			TreeViewItem headerItem = (TreeViewItem)parentNode.Parent.Item.OutlinerEntry;
+			TreeViewDir headerItem = (TreeViewDir)parentNode.Parent.Item.OutlinerEntry;
 			headerItem.Items.Remove(parentNode.Item.OutlinerEntry);
 			parentNode.Item.containsBlock = true;
 			parentNode.Item.OutlinerEntry = null;
@@ -183,9 +207,9 @@ namespace CyubeBlockMaker
 			{
 				if (node.Item.containsBlock) return;
 
-				TreeViewItem items = (TreeViewItem)nodeItem.OutlinerEntry;
+				TreeViewDir item = (TreeViewDir)nodeItem.OutlinerEntry;
 				var dirInfo = new DirectoryInfo(e.FullPath);
-				items.Header = dirInfo.Name;
+				item.Header = dirInfo.Name;
 			}
 			else
 			{
@@ -193,6 +217,7 @@ namespace CyubeBlockMaker
 				label.filePath = e.FullPath;
 				label.SetBlockName(System.IO.Path.GetFileNameWithoutExtension(e.FullPath));
 			}
+			SortOutliner((TreeViewDir)Outliner.Items.GetItemAt(0));
 		}
 		private void UIOnDeleted(FileSystemEventArgs e)
 		{
@@ -204,11 +229,11 @@ namespace CyubeBlockMaker
 			if (isDir)
 			{
 				if (new DirectoryInfo(e.FullPath).Name == "Textures") return;
-				TreeViewItem item = (TreeViewItem)node.Item.OutlinerEntry;
+				TreeViewDir item = (TreeViewDir)node.Item.OutlinerEntry;
 				if (item != null)
 				{
 					// Node is not a block folder
-					TreeViewItem itemParent = (TreeViewItem)item.Parent;
+					TreeViewDir itemParent = (TreeViewDir)item.Parent;
 					itemParent.Items.Remove(item);
 				}
 				else
@@ -216,7 +241,7 @@ namespace CyubeBlockMaker
 					// node is a block folder, find and delete the nested block label from the outliner
 
 					var nodeParent = node.Parent;
-					var itemParent = (TreeViewItem)nodeParent.Item.OutlinerEntry;
+					var itemParent = (TreeViewDir)nodeParent.Item.OutlinerEntry;
 					var nodeChild = node.GetChildAt(0);
 					itemParent.Items.Remove(nodeChild.Item.OutlinerEntry);
 				}
@@ -230,14 +255,14 @@ namespace CyubeBlockMaker
 				
 
 				BlockLabel label = (BlockLabel)node.Item.OutlinerEntry;
-				TreeViewItem labelParent = (TreeViewItem)label.Parent;
+				TreeViewDir labelParent = (TreeViewDir)label.Parent;
 				if(labelParent != null)
 				{
 					labelParent.Items.Remove(label);
 
 					node.Parent.Item.containsBlock = false;
 
-					TreeViewItem newHeader = new TreeViewItem();
+					TreeViewDir newHeader = new TreeViewDir();
 					newHeader.Header = new DirectoryInfo(node.Parent.Item.name).Name;
 					labelParent.Items.Add(newHeader);
 					node.Parent.Item.OutlinerEntry = newHeader;
