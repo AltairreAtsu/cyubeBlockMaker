@@ -199,9 +199,10 @@ namespace CyubeBlockMaker
 			string nodePath = GetWorkspaceRelativePath(e.OldFullPath);
 
 			var node = fileTree.GetNodeFromPath(nodePath);
+			if (node == null) return;
 			var nodeItem = node.Item;
 
-			nodeItem.name = System.IO.Path.GetFileName(e.Name);
+			nodeItem.name = System.IO.Path.GetFileName(e.FullPath);
 			if (nodeItem.isDirectory)
 			{
 				if (node.Item.containsBlock) return;
@@ -225,6 +226,7 @@ namespace CyubeBlockMaker
 
 			string nodePath = GetWorkspaceRelativePath(e.FullPath);
 			var node = fileTree.GetNodeFromPath(nodePath);
+			if (node == null) return;
 
 			if (isDir)
 			{
@@ -330,10 +332,10 @@ namespace CyubeBlockMaker
 			{
 				WriteData(saveFileDialog.FileName, block);
 			}
-			dataHasChanged = false;
 		}
 		private void WriteData(string path, CustomBlock block)
 		{
+			dataHasChanged = false;
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 
@@ -856,7 +858,6 @@ namespace CyubeBlockMaker
 		private void TextureMode_ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			//dataHasChanged = textureMode == TextureMode_ComboBox.SelectedIndex;
-			textureMode = TextureMode_ComboBox.SelectedIndex;
 
 			if (TextureTabWrapPanel == null) return;
 			TextureTabWrapPanel.Children.Clear();

@@ -46,9 +46,16 @@ namespace CyubeBlockMaker
 			{
 				if(textPrompt.UserText != string.Empty)
 				{
-					//Rename Dir to rename the node and header
+					
 					string newPath = Path.GetDirectoryName(dirPath) + "\\" + textPrompt.UserText;
-					Directory.Move(dirPath, newPath);
+					if (Directory.Exists(newPath))
+					{
+						MessageBox.Show("Warning, a directory with that name already exists. Please use a different name or delete the other directory.");
+					}
+					else
+					{
+						Directory.Move(dirPath, newPath);
+					}
 				}
 			}
 		}
@@ -75,7 +82,15 @@ namespace CyubeBlockMaker
 			var result = textPrompt.ShowDialog();
 			if(result == true)
 			{
-				Directory.CreateDirectory(dirPath+"\\"+textPrompt.UserText);
+				string newDirPath = dirPath + "\\" + textPrompt.UserText;
+				if (Directory.Exists(newDirPath))
+				{
+					MessageBox.Show("Warning, a directory already exists with that name. Please try a different name or delete the other directory.");
+				}
+				else
+				{
+					Directory.CreateDirectory(newDirPath);
+				}
 			}
 		}
 	}
