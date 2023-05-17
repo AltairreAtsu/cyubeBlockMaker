@@ -22,8 +22,14 @@ namespace CyubeBlockMaker
 			MenuItem renameOption = new MenuItem();
 			renameOption.Header = "Rename";
 			renameOption.Click += RenameContext_Click;
+
+			MenuItem deleteOption = new MenuItem();
+			deleteOption.Header = "Delete";
+			deleteOption.Click += DeleteContext_Click;
+
 			ContextMenu contextMenu = new ContextMenu();
 			contextMenu.Items.Add(renameOption);
+			contextMenu.Items.Add(deleteOption);
 			this.ContextMenu = contextMenu;
 		}
 
@@ -38,6 +44,22 @@ namespace CyubeBlockMaker
 					//Rename Dir to rename the node and header
 					string newPath = Path.GetDirectoryName(dirPath) + "\\" + textPrompt.UserText;
 					Directory.Move(dirPath, newPath);
+				}
+			}
+		}
+
+		public void DeleteContext_Click(object sender, RoutedEventArgs e)
+		{
+			DirectoryInfo dirInfo = new DirectoryInfo(dirPath);
+			if (MessageBox.Show("Really delete " + dirInfo.Name + "?", "Delete directory confirmation", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+			{
+				try
+				{
+					Directory.Delete(dirPath, true);
+				}
+				catch (Exception ex)
+				{
+					MessageBox.Show(ex.Message);
 				}
 			}
 		}
