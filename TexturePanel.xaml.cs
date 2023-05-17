@@ -26,7 +26,7 @@ namespace CyubeBlockMaker
 		private static int TEXTURE_SMALL_ALBEDO_SIZE = 512;
 		private static int TEXTURE_GLOW_SIZE = 1024;
 
-		private BitmapImage image;
+		public BitmapImage image;
 		
 		public Uri TextureURI;
 		public TexturePanelType textureType = TexturePanelType.Albedo;
@@ -85,9 +85,11 @@ namespace CyubeBlockMaker
 			if (System.IO.Path.GetExtension(filePath).Equals(".png"))
 			{
 				TextureURI = new Uri(filePath);
-				var bi = new BitmapImage(TextureURI);
-				bi.CacheOption = BitmapCacheOption.None;
-				image = bi;
+				image = new BitmapImage();
+				image.BeginInit();
+				image.CacheOption = BitmapCacheOption.OnLoad;
+				image.UriSource = TextureURI;
+				image.EndInit();
 				TexturePreview_Image.Source = image;
 
 				if (!ValidateImageSize()) WarnUserInvalidImageSize();

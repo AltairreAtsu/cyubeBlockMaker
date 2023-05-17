@@ -866,7 +866,6 @@ namespace CyubeBlockMaker
 
 			if (TextureTabWrapPanel == null) return;
 			ClearTextureWrapPanel();
-			texturePanels.Clear();
 
 			if(TextureMode_ComboBox.SelectedIndex == 0)
 			{
@@ -930,11 +929,15 @@ namespace CyubeBlockMaker
 
 		private void ClearTextureWrapPanel()
 		{
-			foreach(TexturePanel panel in TextureTabWrapPanel.Children)
+			foreach(TexturePanel panel in texturePanels)
 			{
 				panel.TextureURI = null;
-				panel.SetImageSource(null);
+				panel.TexturePreview_Image.Source = null;
+				panel.TexturePreview_Image = null;
+				panel.image.UriSource = null;
+				panel.image = null;
 			}
+			texturePanels.Clear();
 			TextureTabWrapPanel.Children.Clear();
 		}
 		private void AddNormalMapPanels(int textureMode)
