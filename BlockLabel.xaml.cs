@@ -103,6 +103,22 @@ namespace CyubeBlockMaker
 			}
 		}
 
+		private void Conext_Rename_Click(object sender, RoutedEventArgs e)
+		{
+			//Open a rename window
+			//Capture the result and apply it to the block label and it's underlying file
+			TextPrompt prompt = new TextPrompt("Rename " + blockName, "Enter a new name:");
+			var result = prompt.ShowDialog();
+			if (result == true ){
+				if (prompt.UserText != string.Empty)
+				{
+					string newPath = System.IO.Path.GetDirectoryName(filePath) + "\\" + prompt.UserText + ".block";
+					File.Move(filePath, newPath);
+				}
+			}
+
+		}
+
 		// Getters and Setters
 		public void SetBlockName(string blockName)
 		{

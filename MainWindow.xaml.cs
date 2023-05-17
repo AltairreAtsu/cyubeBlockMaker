@@ -167,7 +167,7 @@ namespace CyubeBlockMaker
 
 
 			var child = parentNode.AddChild(new FileNode(dirInfo.Name, true));
-			TreeViewDir newHeaderItem = new TreeViewDir();
+			TreeViewDir newHeaderItem = new TreeViewDir(dirPath);
 			newHeaderItem.Header = dirInfo.Name;
 			parentOutlinerItem.Items.Add(newHeaderItem);
 			child.Item.OutlinerEntry = newHeaderItem;
@@ -210,6 +210,7 @@ namespace CyubeBlockMaker
 				TreeViewDir item = (TreeViewDir)nodeItem.OutlinerEntry;
 				var dirInfo = new DirectoryInfo(e.FullPath);
 				item.Header = dirInfo.Name;
+				item.dirPath = e.FullPath;
 			}
 			else
 			{
@@ -262,7 +263,7 @@ namespace CyubeBlockMaker
 
 					node.Parent.Item.containsBlock = false;
 
-					TreeViewDir newHeader = new TreeViewDir();
+					TreeViewDir newHeader = new TreeViewDir(System.IO.Path.GetDirectoryName(e.FullPath));
 					newHeader.Header = new DirectoryInfo(node.Parent.Item.name).Name;
 					labelParent.Items.Add(newHeader);
 					node.Parent.Item.OutlinerEntry = newHeader;
