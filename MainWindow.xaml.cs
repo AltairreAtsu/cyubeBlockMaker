@@ -91,30 +91,6 @@ namespace CyubeBlockMaker
 			fileTree = FileTreeBuilder.CompileFileTree(WORKSPACE_ROOT+"\\", WORKSPACE_NAME, WORKSPACE_ROOT, Outliner);
 		}
 
-
-		public bool TryDeleteBlockLabel(BlockLabel label)
-		{
-			return SearchTreeViewItem(Outliner.Items, label);
-		}
-		private bool SearchTreeViewItem(ItemCollection itemCollection, BlockLabel label)
-		{
-			foreach (Object obj in itemCollection)
-			{
-				if (obj is BlockLabel)
-				{
-					BlockLabel bl = (BlockLabel)obj;
-					itemCollection.Remove(bl);
-					return true;
-				}
-				if (obj is TreeViewItem)
-				{
-					TreeViewItem treeViewItem = (TreeViewItem)obj;
-					SearchTreeViewItem(treeViewItem.Items, label);
-				}
-			}
-			return false;
-		}
-
 		// File System Watcher
 		private void InitializeWatcher()
 		{
@@ -141,47 +117,68 @@ namespace CyubeBlockMaker
 		private void UIOnCreated(FileSystemEventArgs e)
 		{
 			var dirPath = System.IO.Path.GetDirectoryName(e.FullPath);
-			var dirInfo = new DirectoryInfo(dirPath);
-			var parrentNode = fileTree.GetNodeFromPath(dirPath);
-			TreeViewItem parentOutlinerItem = (TreeViewItem)parrentNode.Item.OutlinerEntry;
-			bool isDir = System.IO.Path.GetExtension(e.FullPath) == string.Empty;
 
+
+			string parentNodePath = GetWorkspaceRelativePath(dirPath);
+			var parrentNode = fileTree.GetNodeFromPath(parentNodePath);
+
+			bool isDir = System.IO.Path.GetExtension(e.FullPath) == string.Empty;
 
 			if (isDir)
 			{
-				if (new DirectoryInfo(e.FullPath).Name == "Textures") return;
- 				var child = parrentNode.AddChild(new FileNode(e.FullPath, true));
-				TreeViewItem newHeaderItem = new TreeViewItem();
-				newHeaderItem.Header = dirInfo.Name;
-				parentOutlinerItem.Items.Add(newHeaderItem);
-				child.Item.OutlinerEntry = newHeaderItem;
+				AddHeaderNode(e.FullPath, parrentNode);
 			}
 			else
 			{
-				if (System.IO.Path.GetExtension(e.FullPath) != ".block") return;
-				if (fileTree.GetNodeFromPath(e.FullPath) != null) return;
-
-				TreeViewItem parentParent = (TreeViewItem)parentOutlinerItem.Parent;
-				parentParent.Items.Remove(parentOutlinerItem);
-				parrentNode.Item.containsBlock = true;
-				var child = parrentNode.AddChild(new FileNode(e.FullPath,true));
-
-				BlockLabel newLabel = new BlockLabel();
-				newLabel.filePath = e.FullPath;
-				newLabel.SetBlockName(System.IO.Path.GetFileNameWithoutExtension(e.FullPath));
-				parentParent.Items.Add((newLabel));
-				child.Item.OutlinerEntry = newLabel;
+				AddFileNode(e.FullPath, parrentNode);
 			}
 
 		}
+		private void AddHeaderNode(string dirPath, TreeNode parentNode)
+		{
+			var dirInfo = new DirectoryInfo(dirPath);
+			if (dirInfo.Name == "Textures") return;
+
+			TreeViewItem parentOutlinerItem = (TreeViewItem)parentNode.Item.OutlinerEntry;
+
+
+			var child = parentNode.AddChild(new FileNode(dirInfo.Name, true));
+			TreeViewItem newHeaderItem = new TreeViewItem();
+			newHeaderItem.Header = dirInfo.Name;
+			parentOutlinerItem.Items.Add(newHeaderItem);
+			child.Item.OutlinerEntry = newHeaderItem;
+		}
+		private void AddFileNode(string filePath, TreeNode parentNode)
+		{
+			if (System.IO.Path.GetExtension(filePath) != ".block") return;
+
+			string nodePath = GetWorkspaceRelativePath(filePath);
+			if (fileTree.GetNodeFromPath(nodePath) != null) return;
+
+			// Find and Remove the header
+			TreeViewItem headerItem = (TreeViewItem)parentNode.Parent.Item.OutlinerEntry;
+			headerItem.Items.Remove(parentNode.Item.OutlinerEntry);
+			parentNode.Item.containsBlock = true;
+			parentNode.Item.OutlinerEntry = null;
+
+			string fileName = System.IO.Path.GetFileName(filePath);
+			var child = parentNode.AddChild(new FileNode(fileName, true));
+
+			BlockLabel newLabel = new BlockLabel();
+			newLabel.filePath = filePath;
+			newLabel.SetBlockName(System.IO.Path.GetFileNameWithoutExtension(filePath));
+			headerItem.Items.Add((newLabel));
+			child.Item.OutlinerEntry = newLabel;
+		}
+
 		private void UIOnRenamed(RenamedEventArgs e)
 		{
-			MessageBox.Show(e.OldFullPath);
-			MessageBox.Show(e.FullPath);
-			var node = fileTree.GetNodeFromPath(e.OldFullPath);
+			string nodePath = GetWorkspaceRelativePath(e.OldFullPath);
+
+			var node = fileTree.GetNodeFromPath(nodePath);
 			var nodeItem = node.Item;
 
-			nodeItem.name = e.FullPath;
+			nodeItem.name = System.IO.Path.GetFileName(e.Name);
 			if (nodeItem.isDirectory)
 			{
 				if (node.Item.containsBlock) return;
@@ -200,19 +197,25 @@ namespace CyubeBlockMaker
 		private void UIOnDeleted(FileSystemEventArgs e)
 		{
 			bool isDir = System.IO.Path.GetExtension(e.FullPath) == string.Empty;
-			var node = fileTree.GetNodeFromPath(e.FullPath);
+
+			string nodePath = GetWorkspaceRelativePath(e.FullPath);
+			var node = fileTree.GetNodeFromPath(nodePath);
 
 			if (isDir)
 			{
+				if (new DirectoryInfo(e.FullPath).Name == "Textures") return;
 				TreeViewItem item = (TreeViewItem)node.Item.OutlinerEntry;
 				if (item != null)
 				{
+					// Node is not a block folder
 					TreeViewItem itemParent = (TreeViewItem)item.Parent;
 					itemParent.Items.Remove(item);
 				}
 				else
 				{
-					var nodeParent = fileTree.GetNodeFromPath(System.IO.Path.GetDirectoryName(e.FullPath));
+					// node is a block folder, find and delete the nested block label from the outliner
+
+					var nodeParent = node.Parent;
 					var itemParent = (TreeViewItem)nodeParent.Item.OutlinerEntry;
 					var nodeChild = node.GetChildAt(0);
 					itemParent.Items.Remove(nodeChild.Item.OutlinerEntry);
@@ -222,19 +225,23 @@ namespace CyubeBlockMaker
 			else
 			{
 				if (System.IO.Path.GetExtension(e.FullPath) != ".block") return;
+				// Deleting block file. Delete the block label and turn it's directory into a header node
+				// If the folder is also gone don't bother
+				
 
 				BlockLabel label = (BlockLabel)node.Item.OutlinerEntry;
 				TreeViewItem labelParent = (TreeViewItem)label.Parent;
-				labelParent.Items.Remove(label);
+				if(labelParent != null)
+				{
+					labelParent.Items.Remove(label);
 
-				//var parentNode = node.GetParent();
-				var parentNode = fileTree.GetNodeFromPath(System.IO.Path.GetDirectoryName(e.FullPath));
-				parentNode.Item.containsBlock = false;
-				MessageBox.Show(node.Item.name);
-				
-				TreeViewItem newHeader = new TreeViewItem();
-				newHeader.Header = new DirectoryInfo( parentNode.Item.name).Name;
-				labelParent.Items.Add(newHeader);
+					node.Parent.Item.containsBlock = false;
+
+					TreeViewItem newHeader = new TreeViewItem();
+					newHeader.Header = new DirectoryInfo(node.Parent.Item.name).Name;
+					labelParent.Items.Add(newHeader);
+					node.Parent.Item.OutlinerEntry = newHeader;
+				}
 
 				fileTree.RemoveNodeFromTree(node);
 			}

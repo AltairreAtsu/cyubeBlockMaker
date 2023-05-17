@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace CyubeBlockMaker
@@ -34,10 +35,10 @@ namespace CyubeBlockMaker
 			try
 			{
 				TreeNode node = null;
-				TreeViewItem item = new TreeViewItem();
 
 				foreach (string d in Directory.GetDirectories(sDir))
 				{
+					TreeViewItem item = new TreeViewItem();
 					var dirInfo = new DirectoryInfo(d);
 					if (dirInfo.Name == "Textures") return;
 
@@ -67,12 +68,11 @@ namespace CyubeBlockMaker
 					{
 						if (PathIsBlockFile(f))
 						{
-							string fileName = System.IO.Path.GetFileNameWithoutExtension(f);
-							var child = node.AddChild(new FileNode(fileName, false));
+							var child = node.AddChild(new FileNode(Path.GetFileName(f), false));
 
 							BlockLabel label = new BlockLabel();
 							label.filePath = f;
-							label.SetBlockName(fileName);
+							label.SetBlockName(Path.GetFileNameWithoutExtension(f));
 
 							TreeViewItem parentItem = outlinerChildren[Directory.GetParent(d).FullName + "\\"];
 							parentItem.Items.Add(label);

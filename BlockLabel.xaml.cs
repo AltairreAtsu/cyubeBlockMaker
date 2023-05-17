@@ -57,6 +57,7 @@ namespace CyubeBlockMaker
 		{
 			MainWindow.mainWindow.OpenBlock(filePath);
 		}
+
 		private void Conext_Duplicate_Click(object sender, RoutedEventArgs e)
 		{
 			DirectoryInfo dirInfo = new DirectoryInfo(System.IO.Path.GetDirectoryName(filePath));
@@ -82,13 +83,8 @@ namespace CyubeBlockMaker
 			{
 				File.Copy(f, newDirName + "\\Textures\\" + System.IO.Path.GetFileName(f));
 			}
-
-			BlockLabel bl = new BlockLabel();
-			bl.SetBlockName(blockName);
-			bl.filePath = newDirName + "\\" + blockName + ".block";
-			bl.parent = parent;
-			parent.Items.Add(bl);
 		}
+
 		private void Conext_Delete_Click(object sender, RoutedEventArgs e)
 		{
 			if(MessageBox.Show("Really delete " + blockName + "?", "Delete file confirmation", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
@@ -96,7 +92,6 @@ namespace CyubeBlockMaker
 				try
 				{
 					Directory.Delete(System.IO.Path.GetDirectoryName(filePath), true);
-					MainWindow.mainWindow.TryDeleteBlockLabel(this);
 				}
 				catch (Exception ex)
 				{

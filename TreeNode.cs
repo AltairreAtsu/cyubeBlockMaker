@@ -63,6 +63,7 @@ public class TreeNode
 			if(i != splitPath.Length - 1)
 				path += "\\";
 		}
+		//MessageBox.Show(path);
 		return path;
 	}
 
@@ -101,6 +102,12 @@ public class TreeNode
 		}
 		treePrinter.depth--;
 		return treePrinter;
+	}
+	public string PrintTree()
+	{
+		TreePrinter printer = new TreePrinter();
+		PrintTree(printer);
+		return string.Join("\n", printer.nodePaths);
 	}
 
 	public TreeNode GetChildAt(int index)
