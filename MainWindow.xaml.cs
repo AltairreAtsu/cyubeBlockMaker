@@ -20,7 +20,6 @@ using System.Security.Cryptography;
 using System.IO.Enumeration;
 using System.Threading;
 using System.Runtime;
-using ICSharpCode.SharpZipLib.Zip;
 
 namespace CyubeBlockMaker
 {
@@ -37,7 +36,6 @@ namespace CyubeBlockMaker
 
 		public static string WORKSPACE_ROOT = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\Workspace";
 		public static string WORKSPACE_NAME = "Workspace";
-		public static string TEMPORARY_SAVE_DIR = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\Temp";
 		private FileSystemWatcher workSpaceWatcher;
 		private TreeNode fileTree;
 
@@ -69,8 +67,8 @@ namespace CyubeBlockMaker
 			InitializeComponent();
 			mainWindow = this;
 			InitializeTextureTab();
-			//InitializeWorkspace();
-			//InitializeWatcher();
+			InitializeWorkspace();
+			InitializeWatcher();
 		}
 
 		private void InitializeTextureTab()
@@ -341,19 +339,10 @@ namespace CyubeBlockMaker
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 
-			if (!Directory.Exists(TEMPORARY_SAVE_DIR))
-			{
-				Directory.CreateDirectory(TEMPORARY_SAVE_DIR);
-			}
-			else
-			{
-				Directory.Delete(TEMPORARY_SAVE_DIR, true);
-				Directory.CreateDirectory(TEMPORARY_SAVE_DIR);
-			}
+			JsonManager.WriteCustomBlockJson(path, block);
+			path = System.IO.Path.GetDirectoryName(path);
 
-			JsonManager.WriteCustomBlockJson(TEMPORARY_SAVE_DIR+ "\\Properties.json", block);
-
-			string textureDir = TEMPORARY_SAVE_DIR + System.IO.Path.DirectorySeparatorChar + "Textures";
+			string textureDir = path + System.IO.Path.DirectorySeparatorChar + "Textures";
 			Directory.CreateDirectory(textureDir);
 			textureDir = textureDir + System.IO.Path.DirectorySeparatorChar;
 			foreach (TexturePanel texturePanel in texturePanels)
@@ -366,9 +355,6 @@ namespace CyubeBlockMaker
 						File.Copy(sourcePath, destPath, true);
 				}
 			}
-
-			FastZip fastZip = new FastZip();
-			fastZip.CreateZip(path, TEMPORARY_SAVE_DIR, true, "");
 		}
 		public void OpenBlock(string path)
 		{
@@ -377,22 +363,6 @@ namespace CyubeBlockMaker
 				return;
 			}
 
-			if (!Directory.Exists(TEMPORARY_SAVE_DIR))
-			{
-				Directory.CreateDirectory(TEMPORARY_SAVE_DIR);
-			}
-			else
-			{
-				Directory.Delete(TEMPORARY_SAVE_DIR, true );
-				Directory.CreateDirectory(TEMPORARY_SAVE_DIR);
-			}
-
-			FastZip fastZip = new FastZip();
-			fastZip.ExtractZip(path, TEMPORARY_SAVE_DIR, "");
-
-			saveDestination = path;
-			path = TEMPORARY_SAVE_DIR + "\\Properties.json";
-
 			CustomBlock block;
 			block = JsonManager.ReadJson(path);
 			if (block == null)
@@ -400,7 +370,8 @@ namespace CyubeBlockMaker
 				MessageBox.Show("Failed to Parse block JSON. File data may not be formated correctly.");
 				return;
 			}
-			
+
+			saveDestination = path;
 
 			Name_TextBox.Text = block.Name;
 			CreatorName_TextBox.Text = block.CreatorName;
@@ -422,7 +393,8 @@ namespace CyubeBlockMaker
 			WithNormals_CheckBox.IsChecked = block.Textures.WithNormals;
 			WithGlowMaps_CheckBox.IsChecked = block.Textures.WithGlowMap;
 
-			string dir = TEMPORARY_SAVE_DIR + "\\" + "Textures";
+			string dir = System.IO.Path.GetDirectoryName(path);
+			dir = dir + System.IO.Path.DirectorySeparatorChar + "Textures";
 			if (Directory.Exists(dir))
 			{
 				string[] files = Directory.GetFiles(dir);
@@ -966,7 +938,7 @@ namespace CyubeBlockMaker
 				panel.image = null;
 			}
 			texturePanels.Clear();
-			TextureTabWrapPanel.Children.Clear(); 
+			TextureTabWrapPanel.Children.Clear();
 		}
 		private void AddNormalMapPanels(int textureMode)
 		{
