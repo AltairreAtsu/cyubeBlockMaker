@@ -13,6 +13,8 @@ namespace CyubeBlockMaker
 		public bool DoPreFillCreatorName { get { return appSettings.PreFillCreatorName != string.Empty; } }
 		public bool SupressNoRecipeWarning { get { return appSettings.SupressNoRecipeWarning; } set { appSettings.SupressNoRecipeWarning = value; } }
 		public string PreFillCreatorName { get { return appSettings.PreFillCreatorName; } set { appSettings.PreFillCreatorName = value; } }
+		public bool UserHasSelectedImageApp { get { return appSettings.ImageAppPath != string.Empty; } }
+		public string ImageAppPath { get { return appSettings.ImageAppPath; } set { appSettings.ImageAppPath = value; } }
 
 		public SettingsManager()
 		{

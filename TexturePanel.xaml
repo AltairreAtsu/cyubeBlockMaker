@@ -17,4 +17,10 @@
 		<Label Name="TextureName_Label" Content="all.dds" HorizontalAlignment="Center" Grid.Row="1"/>
 		
 	</Grid>
+	<UserControl.ContextMenu>
+		<ContextMenu>
+			<MenuItem Header="Select a texture" Click="SelectTexture_Click"/>
+			<MenuItem Header="Edit" Click="Edit_Click"/>
+		</ContextMenu>
+	</UserControl.ContextMenu>
 </UserControl>

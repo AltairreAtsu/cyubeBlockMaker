@@ -10,5 +10,6 @@ namespace CyubeBlockMaker
 	{
 		public string PreFillCreatorName = "";
 		public bool SupressNoRecipeWarning = false;
+		public string ImageAppPath = "";
 	}
 }

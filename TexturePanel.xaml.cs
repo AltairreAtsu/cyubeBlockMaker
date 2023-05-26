@@ -2,6 +2,7 @@
 using SharpVectors.Renderers.Gdi;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -66,6 +67,11 @@ namespace CyubeBlockMaker
 
 		private void Grid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 		{
+			OpenImageBrowser();
+		}
+
+		private void OpenImageBrowser()
+		{
 			OpenFileDialog fileDialog = new OpenFileDialog();
 			fileDialog.Filter = "PNG (*.png)|*.png";
 			fileDialog.Title = "Select an image to open";
@@ -128,6 +134,31 @@ namespace CyubeBlockMaker
 			else
 			{
 				return image.PixelHeight == TEXTURE_GLOW_SIZE && image.PixelWidth == TEXTURE_GLOW_SIZE;
+			}
+		}
+
+		private void SelectTexture_Click(object sender, RoutedEventArgs e)
+		{
+			OpenImageBrowser();
+		}
+
+		private void Edit_Click(object sender, RoutedEventArgs e)
+		{
+			if(TextureURI == null)
+			{
+				MessageBox.Show("No Textured selected to edit!");
+				return;
+			}
+			if (MainWindow.mainWindow.settingsManager.UserHasSelectedImageApp)
+			{
+				ProcessStartInfo startInfo = new ProcessStartInfo();
+				startInfo.FileName = MainWindow.mainWindow.settingsManager.ImageAppPath;
+				startInfo.Arguments = TextureURI.AbsolutePath;
+				Process.Start(startInfo);
+			}
+			else
+			{
+				MessageBox.Show("You must set a prefered image editing app before you can use these feature!");
 			}
 		}
 	}

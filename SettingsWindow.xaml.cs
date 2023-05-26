@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -29,6 +30,8 @@ namespace CyubeBlockMaker
 			SettingsManager = settingsManager;
 			CreatorNamePreFill_TextBox.Text = settingsManager.PreFillCreatorName;
 			SupressNoRecipeWarning_CheckBox.IsChecked = settingsManager.SupressNoRecipeWarning;
+			if(settingsManager.UserHasSelectedImageApp)
+				AppName_Label.Content = System.IO.Path.GetFileNameWithoutExtension(settingsManager.ImageAppPath);
 		}
 
 		private void CreatorNamePreFill_TextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -49,6 +52,19 @@ namespace CyubeBlockMaker
 		{
 			SettingsManager.SaveSettings();
 			MainWindow.mainWindow.ClosingSettingsWindow();
+		}
+
+		private void SelectApp_Button_Click(object sender, RoutedEventArgs e)
+		{
+			OpenFileDialog ofd = new OpenFileDialog();
+			ofd.Multiselect = false;
+			ofd.Title = "Select an Image App";
+			ofd.Filter = "Executable | *.exe";
+			if (ofd.ShowDialog() == true)
+			{
+				SettingsManager.ImageAppPath = ofd.FileName;
+				AppName_Label.Content = System.IO.Path.GetFileNameWithoutExtension(ofd.FileName);
+			}
 		}
 	}
 }

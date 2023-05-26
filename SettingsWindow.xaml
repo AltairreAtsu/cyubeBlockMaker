@@ -25,6 +25,16 @@
 				<Label Grid.Column="0" Content="Supress no recipe warning:"/>
 				<CheckBox Grid.Column="1" Name="SupressNoRecipeWarning_CheckBox" VerticalAlignment="Center" Unchecked="SupressNoRecipeWarning_CheckBox_Unchecked" Checked="SupressNoRecipeWarning_CheckBox_Checked"/>
 			</Grid>
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="137*"/>
+					<ColumnDefinition Width="162*"/>
+					<ColumnDefinition Width="31*"/>
+				</Grid.ColumnDefinitions>
+				<Label Grid.Column="0" Content="Image Editing Program:"/>
+				<Label Grid.Column="1" Name="AppName_Label" HorizontalAlignment="Right" Content="No App Selected"/>
+				<Button Grid.Column="2" Name="SelectApp_Button" Content="..." Click="SelectApp_Button_Click"/>
+			</Grid>
 		</StackPanel>
 	</Grid>
 </Window>

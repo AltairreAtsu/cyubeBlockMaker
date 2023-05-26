@@ -64,7 +64,7 @@ namespace CyubeBlockMaker
 		private BlockRecipe recipe;
 		public WorkspaceManager workspaceManager;
 		
-		private SettingsManager settingsManager;
+		public SettingsManager settingsManager;
 		private SettingsWindow settingsWindow;
 		private bool settingsWindowOpen = false;
 
