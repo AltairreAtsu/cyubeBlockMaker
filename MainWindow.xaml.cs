@@ -36,8 +36,6 @@ namespace CyubeBlockMaker
 
 		public static string WORKSPACE_ROOT = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\Workspace";
 		public static string WORKSPACE_NAME = "Workspace";
-		private FileSystemWatcher workSpaceWatcher;
-		private TreeNode fileTree;
 
 		// State Flags
 		private bool nameInvalidFlag = false;
@@ -61,6 +59,7 @@ namespace CyubeBlockMaker
 
 		private List<TexturePanel> texturePanels = new List<TexturePanel>();
 		private BlockRecipe recipe;
+		public WorkspaceManager workspaceManager;
 
 		public MainWindow()
 		{
@@ -68,7 +67,6 @@ namespace CyubeBlockMaker
 			mainWindow = this;
 			InitializeTextureTab();
 			InitializeWorkspace();
-			InitializeWatcher();
 		}
 
 		private void InitializeTextureTab()
@@ -86,192 +84,10 @@ namespace CyubeBlockMaker
 				// Workspace is empty
 				return;
 			}
-			fileTree = FileTreeBuilder.CompileFileTree(WORKSPACE_ROOT+"\\", WORKSPACE_NAME, WORKSPACE_ROOT, Outliner);
-			SortOutliner((TreeViewDir)Outliner.Items.GetItemAt(0));
-		}
-		private void SortOutliner(TreeViewDir rootItem)
-		{
-			rootItem.Items.SortDescriptions.Clear();
-			rootItem.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription("SortPriority", System.ComponentModel.ListSortDirection.Ascending));
-			rootItem.Items.SortDescriptions.Add(new System.ComponentModel.SortDescription("Header", System.ComponentModel.ListSortDirection.Ascending));
 
-			rootItem.Items.Refresh();
-			foreach (object item in rootItem.Items)
-			{
-				if(item is TreeViewDir)
-					SortOutliner((TreeViewDir)item);
-			}
-		}
-		private void RefreshOutliner()
-		{
-			Outliner.Items.Clear();
-			fileTree = FileTreeBuilder.CompileFileTree(WORKSPACE_ROOT + "\\", WORKSPACE_NAME, WORKSPACE_ROOT, Outliner);
-		}
-
-		// File System Watcher
-		private void InitializeWatcher()
-		{
-			workSpaceWatcher = new FileSystemWatcher(WORKSPACE_ROOT+"\\");
-			workSpaceWatcher.IncludeSubdirectories = true;
-			workSpaceWatcher.Created += OnCreated;
-			workSpaceWatcher.Renamed += OnRenamed;
-			workSpaceWatcher.Deleted += OnDeleted;
-			workSpaceWatcher.EnableRaisingEvents = true;
-		}
-		private void OnCreated(object sender, FileSystemEventArgs e)
-		{
-			this.Dispatcher.BeginInvoke(UIOnCreated, System.Windows.Threading.DispatcherPriority.Normal, e);
-		}
-		private void OnRenamed(object sender, RenamedEventArgs e)
-		{
-			this.Dispatcher.BeginInvoke(UIOnRenamed, System.Windows.Threading.DispatcherPriority.Normal, e);
-		}
-		private void OnDeleted(object sender, FileSystemEventArgs e)
-		{
-			this.Dispatcher.BeginInvoke(UIOnDeleted, System.Windows.Threading.DispatcherPriority.Normal, e);
-		}
-
-		private void UIOnCreated(FileSystemEventArgs e)
-		{
-			var dirPath = System.IO.Path.GetDirectoryName(e.FullPath);
-
-
-			string parentNodePath = GetWorkspaceRelativePath(dirPath);
-			var parrentNode = fileTree.GetNodeFromPath(parentNodePath);
-			
-			bool isDir = System.IO.Path.GetExtension(e.FullPath) == string.Empty;
-
-			if (isDir)
-			{
-				AddHeaderNode(e.FullPath, parrentNode);
-				string[] dirs = Directory.GetDirectories(dirPath);
-				string[] files = Directory.GetFiles(dirPath);
-				if(dirs.Length > 0 || files.Length > 0)
-				{
-					RefreshOutliner();
-				}
-			}
-			else
-			{
-				AddFileNode(e.FullPath, parrentNode);
-			}
-			SortOutliner((TreeViewDir)Outliner.Items.GetItemAt(0));
-		}
-		private void AddHeaderNode(string dirPath, TreeNode parentNode)
-		{
-			var dirInfo = new DirectoryInfo(dirPath);
-			if (dirInfo.Name == "Textures") return;
-
-			TreeViewDir parentOutlinerItem = (TreeViewDir)parentNode.Item.OutlinerEntry;
-
-
-			var child = parentNode.AddChild(new FileNode(dirInfo.Name, true));
-			TreeViewDir newHeaderItem = new TreeViewDir(dirPath);
-			newHeaderItem.Header = dirInfo.Name;
-			parentOutlinerItem.Items.Add(newHeaderItem);
-			child.Item.OutlinerEntry = newHeaderItem;
-		}
-		private void AddFileNode(string filePath, TreeNode parentNode)
-		{
-			if (System.IO.Path.GetExtension(filePath) != ".block") return;
-
-			string nodePath = GetWorkspaceRelativePath(filePath);
-			if (fileTree.GetNodeFromPath(nodePath) != null) return;
-
-			// Find and Remove the header
-			TreeViewDir headerItem = (TreeViewDir)parentNode.Parent.Item.OutlinerEntry;
-			headerItem.Items.Remove(parentNode.Item.OutlinerEntry);
-			parentNode.Item.containsBlock = true;
-			parentNode.Item.OutlinerEntry = null;
-
-			string fileName = System.IO.Path.GetFileName(filePath);
-			var child = parentNode.AddChild(new FileNode(fileName, true));
-
-			BlockLabel newLabel = new BlockLabel();
-			newLabel.filePath = filePath;
-			newLabel.SetBlockName(System.IO.Path.GetFileNameWithoutExtension(filePath));
-			headerItem.Items.Add((newLabel));
-			child.Item.OutlinerEntry = newLabel;
-		}
-
-		private void UIOnRenamed(RenamedEventArgs e)
-		{
-			string nodePath = GetWorkspaceRelativePath(e.OldFullPath);
-
-			var node = fileTree.GetNodeFromPath(nodePath);
-			if (node == null) return;
-			var nodeItem = node.Item;
-
-			nodeItem.name = System.IO.Path.GetFileName(e.FullPath);
-			if (nodeItem.isDirectory)
-			{
-				if (node.Item.containsBlock) return;
-
-				TreeViewDir item = (TreeViewDir)nodeItem.OutlinerEntry;
-				var dirInfo = new DirectoryInfo(e.FullPath);
-				item.Header = dirInfo.Name;
-				item.dirPath = e.FullPath;
-			}
-			else
-			{
-				BlockLabel label = (BlockLabel)node.Item.OutlinerEntry;
-				label.filePath = e.FullPath;
-				label.SetBlockName(System.IO.Path.GetFileNameWithoutExtension(e.FullPath));
-			}
-			SortOutliner((TreeViewDir)Outliner.Items.GetItemAt(0));
-		}
-		private void UIOnDeleted(FileSystemEventArgs e)
-		{
-			bool isDir = System.IO.Path.GetExtension(e.FullPath) == string.Empty;
-
-			string nodePath = GetWorkspaceRelativePath(e.FullPath);
-			var node = fileTree.GetNodeFromPath(nodePath);
-			if (node == null) return;
-
-			if (isDir)
-			{
-				if (new DirectoryInfo(e.FullPath).Name == "Textures") return;
-				TreeViewDir item = (TreeViewDir)node.Item.OutlinerEntry;
-				if (item != null)
-				{
-					// Node is not a block folder
-					TreeViewDir itemParent = (TreeViewDir)item.Parent;
-					itemParent.Items.Remove(item);
-				}
-				else
-				{
-					// node is a block folder, find and delete the nested block label from the outliner
-
-					var nodeParent = node.Parent;
-					var itemParent = (TreeViewDir)nodeParent.Item.OutlinerEntry;
-					var nodeChild = node.GetChildAt(0);
-					itemParent.Items.Remove(nodeChild.Item.OutlinerEntry);
-				}
-				fileTree.RemoveNodeFromTree(node);
-			}
-			else
-			{
-				if (System.IO.Path.GetExtension(e.FullPath) != ".block") return;
-				// Deleting block file. Delete the block label and turn it's directory into a header node
-				// If the folder is also gone don't bother
-				
-
-				BlockLabel label = (BlockLabel)node.Item.OutlinerEntry;
-				TreeViewDir labelParent = (TreeViewDir)label.Parent;
-				if(labelParent != null)
-				{
-					labelParent.Items.Remove(label);
-
-					node.Parent.Item.containsBlock = false;
-
-					TreeViewDir newHeader = new TreeViewDir(System.IO.Path.GetDirectoryName(e.FullPath));
-					newHeader.Header = new DirectoryInfo(node.Parent.Item.name).Name;
-					labelParent.Items.Add(newHeader);
-					node.Parent.Item.OutlinerEntry = newHeader;
-				}
-
-				fileTree.RemoveNodeFromTree(node);
-			}
+			workspaceManager = new WorkspaceManager(Outliner);
+			workspaceManager.BuildWorkspace();
+			workspaceManager.SortOutliner();
 		}
 
 		public void ResetWindow()
@@ -340,9 +156,8 @@ namespace CyubeBlockMaker
 			GC.WaitForPendingFinalizers();
 
 			JsonManager.WriteCustomBlockJson(path, block);
-			path = System.IO.Path.GetDirectoryName(path);
 
-			string textureDir = path + System.IO.Path.DirectorySeparatorChar + "Textures";
+			string textureDir = System.IO.Path.GetDirectoryName(path) + System.IO.Path.DirectorySeparatorChar + "Textures";
 			Directory.CreateDirectory(textureDir);
 			textureDir = textureDir + System.IO.Path.DirectorySeparatorChar;
 			foreach (TexturePanel texturePanel in texturePanels)
@@ -355,6 +170,8 @@ namespace CyubeBlockMaker
 						File.Copy(sourcePath, destPath, true);
 				}
 			}
+
+			workspaceManager.AddBlock(path, block);
 		}
 		public void OpenBlock(string path)
 		{
@@ -641,6 +458,23 @@ namespace CyubeBlockMaker
 						validationErrors.Add("Unique ID cannot be equal to or less than 1!");
 						return false;
 					}
+					bool uIDInUse = false;
+					if(saveDestination != null)
+					{
+						uIDInUse = workspaceManager.UniqueIDInUse(uID, saveDestination);
+					}
+					else
+					{
+						uIDInUse = workspaceManager.UniqueIDInUse(uID);
+					}
+					if(uIDInUse)
+					{
+						uniqueIDInvalidFlag = true;
+						UniqueID_Textbox.BorderBrush = Brushes.Red;
+						validationErrors.Add("Unique ID already in use by another block in the workspace!");
+						return false;
+					}
+					
 				}
 				catch
 				{

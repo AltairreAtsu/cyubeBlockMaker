@@ -24,7 +24,6 @@ namespace CyubeBlockMaker
 	{
 		private string blockName;
 		public string filePath;
-		public TreeViewItem parent;
 		
 		private int sortPriority = 1;
 		public int SortPriority { get { return sortPriority; } }
@@ -66,6 +65,7 @@ namespace CyubeBlockMaker
 			DirectoryInfo dirInfo = new DirectoryInfo(System.IO.Path.GetDirectoryName(filePath));
 			string dirName = dirInfo.Name;
 			string newDirName = dirInfo.Parent.FullName + "\\" + dirName + " Copy";
+			string newBlockPath = "";
 			int i = 0;
 			while (Directory.Exists(newDirName))
 			{
@@ -78,6 +78,10 @@ namespace CyubeBlockMaker
 			foreach (string f in files)
 			{
 				File.Copy(f, newDirName+"\\" + System.IO.Path.GetFileName(f), true);
+				if(System.IO.Path.GetFileNameWithoutExtension(f) == ".block")
+				{
+					newBlockPath = f;
+				}
 			}
 
 			Directory.CreateDirectory(newDirName+"\\Textures");
@@ -85,6 +89,12 @@ namespace CyubeBlockMaker
 			foreach (string f in files)
 			{
 				File.Copy(f, newDirName + "\\Textures\\" + System.IO.Path.GetFileName(f));
+			}
+
+			var newBlock = MainWindow.mainWindow.workspaceManager.GetBlock(filePath);
+			if( newBlock != null)
+			{
+				MainWindow.mainWindow.workspaceManager.AddBlock(newBlockPath, newBlock);
 			}
 		}
 
@@ -101,6 +111,11 @@ namespace CyubeBlockMaker
 						GC.WaitForPendingFinalizers();
 					}
 					Directory.Delete(System.IO.Path.GetDirectoryName(filePath), true);
+					var block = MainWindow.mainWindow.workspaceManager.GetBlock(filePath);
+					if (block != null)
+					{
+						MainWindow.mainWindow.workspaceManager.RemoveBlock(filePath, block);
+					}
 				}
 				catch (Exception ex)
 				{
@@ -120,6 +135,7 @@ namespace CyubeBlockMaker
 				{
 					string newPath = System.IO.Path.GetDirectoryName(filePath) + "\\" + prompt.UserText + ".block";
 					File.Move(filePath, newPath);
+					MainWindow.mainWindow.workspaceManager.OutlinerManager.RenameBlock(filePath, newPath);
 				}
 			}
 
