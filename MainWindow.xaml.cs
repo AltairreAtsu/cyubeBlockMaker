@@ -20,6 +20,7 @@ using System.Security.Cryptography;
 using System.IO.Enumeration;
 using System.Threading;
 using System.Runtime;
+using System.Windows.Media.Media3D;
 
 namespace CyubeBlockMaker
 {
@@ -160,12 +161,30 @@ namespace CyubeBlockMaker
 				return;
 			}
 
-			SaveFileDialog saveFileDialog = new SaveFileDialog();
-			saveFileDialog.Filter = "block | *.block";
-			saveFileDialog.InitialDirectory = WORKSPACE_ROOT+"\\";
-			if(saveFileDialog.ShowDialog() == true)
+			// Save Destionation was empty and a new location muct be decided
+			// Open a text prompt for the folder and just check the folder does not already exist
+			TextPrompt textPrompt = new TextPrompt("Save Block", "Please enter a project name for your block.");
+			if(textPrompt.ShowDialog() == true)
 			{
-				WriteData(saveFileDialog.FileName, block);
+				if (textPrompt.UserText.Contains('\\'))
+				{
+					MessageBox.Show("Project name cannot contain symbol: \\");
+					Save(true);
+					return;
+				}
+				
+				string path = WORKSPACE_ROOT + "\\" + textPrompt.UserText;
+				if (Directory.Exists(path))
+				{
+					MessageBox.Show("A Block already exists with that project name! Please use a different project name!");
+					Save(true);
+					return;
+				}
+				else
+				{
+					string blockPath = path + "\\" + textPrompt.UserText + ".block";
+					WriteData(blockPath, block);
+				}
 			}
 		}
 		private void WriteData(string path, CustomBlock block)
