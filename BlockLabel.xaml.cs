@@ -60,6 +60,11 @@ namespace CyubeBlockMaker
 			MainWindow.mainWindow.OpenBlock(filePath);
 		}
 
+		private void Conext_OpenFolder_Click(object sender, RoutedEventArgs e)
+		{
+			MainWindow.mainWindow.OpenFileExplorer(System.IO.Path.GetDirectoryName(filePath));
+		}
+
 		private void Conext_Duplicate_Click(object sender, RoutedEventArgs e)
 		{
 			DirectoryInfo dirInfo = new DirectoryInfo(System.IO.Path.GetDirectoryName(filePath));

@@ -18,6 +18,7 @@
 	<UserControl.ContextMenu>
 		<ContextMenu>
 			<MenuItem Header="Open" Click="Conext_Open_Click"/>
+			<MenuItem Header="Open Folder" Click="Conext_OpenFolder_Click"/>
 			<MenuItem Header="Rename" Click="Conext_Rename_Click"/>
 			<MenuItem Header="Duplicate" Click="Conext_Duplicate_Click"/>
 			<MenuItem Header="Delete" Click="Conext_Delete_Click"/>

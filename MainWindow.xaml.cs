@@ -21,6 +21,7 @@ using System.IO.Enumeration;
 using System.Threading;
 using System.Runtime;
 using System.Windows.Media.Media3D;
+using System.Diagnostics;
 
 namespace CyubeBlockMaker
 {
@@ -1221,6 +1222,21 @@ namespace CyubeBlockMaker
 			if(!DiscardUnsavedData()) 
 			{
 				e.Cancel = true;
+			}
+		}
+		public void OpenFileExplorer(string folderPath)
+		{
+			if (Directory.Exists(folderPath))
+			{
+				ProcessStartInfo startInfo = new ProcessStartInfo();
+				startInfo.Arguments = folderPath;
+				startInfo.FileName = "explorer.exe";
+
+				Process.Start(startInfo);
+			}
+			else
+			{
+				MessageBox.Show(string.Format("{0} Directory does not exist!", folderPath));
 			}
 		}
 	}
