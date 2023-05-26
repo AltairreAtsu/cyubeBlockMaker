@@ -574,22 +574,37 @@ namespace CyubeBlockMaker
 		{
 			if (recipe == null || recipe.SizeX == 0 || recipe.SizeY == 0 || recipe.SizeZ == 0)
 			{
-				if (export && MessageBox.Show("Warning: blocks without a recipe can only be used in VoxelAPI mods. Continue Export?", "Exprot Warning", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+				if (export)
 				{
-					recipe = new BlockRecipe();
-					recipe.Array = Array.Empty<int>();
-					recipe.SizeZ = 0;
-					recipe.SizeY = 0;
-					recipe.SizeX = 0;
-					return true;
-				}
-				else
-				{
-					validationErrors.Add("No Recipe detected! Please add one!");
-					return false;
+					if(settingsManager.SupressNoRecipeWarning)
+					{
+						CreateBlankRecipe();
+						return true;
+					}
+					else
+					{
+						if(MessageBox.Show("Warning: blocks without a recipe can only be used in VoxelAPI mods. Continue Export?", "Exprot Warning", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+						{
+							CreateBlankRecipe();
+							return true;
+						}
+						else
+						{
+							validationErrors.Add("No Recipe detected! Please add one!");
+							return false;
+						}
+					}
 				}
 			}
 			return true;
+		}
+		private void CreateBlankRecipe()
+		{
+			recipe = new BlockRecipe();
+			recipe.Array = Array.Empty<int>();
+			recipe.SizeZ = 0;
+			recipe.SizeY = 0;
+			recipe.SizeX = 0;
 		}
 		private bool ValidateTexturePanels(List<string> validationErrors)
 		{
