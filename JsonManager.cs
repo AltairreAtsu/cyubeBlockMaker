@@ -59,5 +59,36 @@ namespace CyubeBlockMaker
 				return null;
 			}
 		}
+
+		public static bool WriteAppSettings(string path, AppSettings appSettings)
+		{
+			JsonSerializerSettings settings = new JsonSerializerSettings();
+			settings.Formatting = Formatting.Indented;
+			settings.NullValueHandling = NullValueHandling.Ignore;
+			string json = JsonConvert.SerializeObject(appSettings, settings);
+
+			try
+			{
+				File.WriteAllText(path, json);
+				return true;
+			}
+			catch
+			{
+				return false;
+			}
+		}
+		public static AppSettings? ReadAppSettings(string path)
+		{
+			try
+			{
+				string jsonString = File.ReadAllText(path);
+				AppSettings? appSettings = JsonConvert.DeserializeObject<AppSettings>(jsonString);
+				return appSettings;
+			}
+			catch
+			{
+				return null;
+			}
+		}
 	}
 }

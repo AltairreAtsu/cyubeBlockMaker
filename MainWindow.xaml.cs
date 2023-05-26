@@ -36,6 +36,7 @@ namespace CyubeBlockMaker
 
 		public static string WORKSPACE_ROOT = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\Workspace";
 		public static string WORKSPACE_NAME = "Workspace";
+		public static string SETTINGS_FILE = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\Settings.json";
 
 		// State Flags
 		private bool nameInvalidFlag = false;
@@ -60,6 +61,10 @@ namespace CyubeBlockMaker
 		private List<TexturePanel> texturePanels = new List<TexturePanel>();
 		private BlockRecipe recipe;
 		public WorkspaceManager workspaceManager;
+		
+		private SettingsManager settingsManager;
+		private SettingsWindow settingsWindow;
+		private bool settingsWindowOpen = false;
 
 		public MainWindow()
 		{
@@ -67,6 +72,8 @@ namespace CyubeBlockMaker
 			mainWindow = this;
 			InitializeTextureTab();
 			InitializeWorkspace();
+			settingsManager = new SettingsManager();
+			ResetCreatorName();
 		}
 
 		private void InitializeTextureTab()
@@ -94,7 +101,7 @@ namespace CyubeBlockMaker
 		{
 			Name_TextBox.Text = string.Empty;
 			Category_TextBox.Text = string.Empty;
-			CreatorName_TextBox.Text = string.Empty;
+			ResetCreatorName();
 			UniqueID_Textbox.Text = string.Empty;
 			Yield_Slider.Value = 0;
 			AnimationSpeed_Slider.Value = 0;
@@ -121,6 +128,18 @@ namespace CyubeBlockMaker
 			uniqueIDToDropInvalidFlag = false;
 			UniqueIDToDrop_TextBox.BorderBrush = SystemColors.ControlDarkBrush;
 			saveDestination = "";
+		}
+
+		private void ResetCreatorName()
+		{
+			if (settingsManager.DoPreFillCreatorName)
+			{
+				CreatorName_TextBox.Text = settingsManager.PreFillCreatorName;
+			}
+			else
+			{
+				CreatorName_TextBox.Text = string.Empty;
+			}
 		}
 
 		#region FileOptionMethods
@@ -1086,7 +1105,13 @@ namespace CyubeBlockMaker
 		private void SettingsButton_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 		{
 			SettingsButton.Background = mouseDownButtonBackground;
-			// Open Settings Window
+			if(!settingsWindowOpen)
+			{
+				settingsWindow = new SettingsWindow(settingsManager);
+				settingsWindow.Show();
+				settingsWindowOpen = true;
+			}
+			
 		}
 		private void SettingsButton_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
 		{
@@ -1097,6 +1122,11 @@ namespace CyubeBlockMaker
 		{
 			int rand = RandomNumberGenerator.GetInt32(0, 214748364);
 			UniqueID_Textbox.Text = rand.ToString();
+		}
+
+		public void ClosingSettingsWindow()
+		{
+			settingsWindowOpen = false;
 		}
 		#endregion
 
