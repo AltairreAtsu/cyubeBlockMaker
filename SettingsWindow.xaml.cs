@@ -32,6 +32,7 @@ namespace CyubeBlockMaker
 			SupressNoRecipeWarning_CheckBox.IsChecked = settingsManager.SupressNoRecipeWarning;
 			if(settingsManager.UserHasSelectedImageApp)
 				AppName_Label.Content = System.IO.Path.GetFileNameWithoutExtension(settingsManager.ImageAppPath);
+			GenerateBlankRecipe_Checkbox.IsChecked = settingsManager.AlwaysAutoGenerateBlankRecipe;
 		}
 
 		private void CreatorNamePreFill_TextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -66,5 +67,15 @@ namespace CyubeBlockMaker
 				AppName_Label.Content = System.IO.Path.GetFileNameWithoutExtension(ofd.FileName);
 			}
 		}
-	}
+
+		private void GenerateBlankRecipe_Checkbox_Checked(object sender, RoutedEventArgs e)
+		{
+			SettingsManager.AlwaysAutoGenerateBlankRecipe = true;
+        }
+
+		private void GenerateBlankRecipe_Checkbox_Unchecked(object sender, RoutedEventArgs e)
+		{
+			SettingsManager.AlwaysAutoGenerateBlankRecipe = false;
+		}
+    }
 }

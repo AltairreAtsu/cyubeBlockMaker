@@ -226,6 +226,7 @@
 						<Grid.RowDefinitions>
 							<RowDefinition/>
 							<RowDefinition/>
+							<RowDefinition/>
 						</Grid.RowDefinitions>
 						<Grid Grid.Row="0">
 							<Grid.ColumnDefinitions>
@@ -249,7 +250,17 @@
 							<CheckBox Name="WithNormals_CheckBox" Content="With Normals" VerticalAlignment="Center" Grid.Column="1" Unchecked="WithNormals_CheckBox_Unchecked" Checked="WithNormals_CheckBox_Checked" ToolTip="Your block uses Normal Map textures. These are blue-ish green textures that provide fake depth to your block."/>
 							<CheckBox Name="WithGlowMaps_CheckBox" Content="With Glow Maps" VerticalAlignment="Center" Grid.Column="2" Unchecked="WithGlowMaps_CheckBox_Unchecked" Checked="WithGlowMaps_CheckBox_Checked" ToolTip="Your block uses an emissive texture that makes it appear to be glowing."/>
 						</Grid>
-						<ScrollViewer Grid.Row="1" MaxHeight="280">
+						<Expander Header="Advanced Options" Grid.Row="1">
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition/>
+									<ColumnDefinition/>
+								</Grid.ColumnDefinitions>
+								<CheckBox Grid.Column="0" Name="BlankRecipeImage_Checkbox" Content="Use Blank Recipe Preview" Checked="BlankRecipeImage_Checkbox_Checked" Unchecked="BlankRecipeImage_Checkbox_Unchecked"/>
+								<CheckBox Grid.Column="1" Name="AutoGenerateSmallAlbedo_Checkbox" Content="Auto Generate Small Albedo"/>
+							</Grid>
+						</Expander>
+						<ScrollViewer Grid.Row="2" MaxHeight="280">
 							<WrapPanel Name="TextureTabWrapPanel">
 							</WrapPanel>
 						</ScrollViewer>

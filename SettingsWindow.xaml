@@ -35,6 +35,18 @@
 				<Label Grid.Column="1" Name="AppName_Label" HorizontalAlignment="Right" Content="No App Selected"/>
 				<Button Grid.Column="2" Name="SelectApp_Button" Content="..." Click="SelectApp_Button_Click"/>
 			</Grid>
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition/>
+					<ColumnDefinition/>
+				</Grid.ColumnDefinitions>
+				<TextBlock Margin="5,0,0,0">
+					Always Generate Blank
+					<LineBreak/>
+					Recipe Image:
+				</TextBlock>
+				<CheckBox Grid.Column="1" Name="GenerateBlankRecipe_Checkbox" Checked="GenerateBlankRecipe_Checkbox_Checked" Unchecked="GenerateBlankRecipe_Checkbox_Unchecked"/>
+			</Grid>
 		</StackPanel>
 	</Grid>
 </Window>
