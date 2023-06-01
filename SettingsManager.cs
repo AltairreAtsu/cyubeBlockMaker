@@ -16,6 +16,7 @@ namespace CyubeBlockMaker
 		public bool UserHasSelectedImageApp { get { return appSettings.ImageAppPath != string.Empty; } }
 		public string ImageAppPath { get { return appSettings.ImageAppPath; } set { appSettings.ImageAppPath = value; } }
 		public bool AlwaysAutoGenerateBlankRecipe { get { return appSettings.AlwaysAutoGenerateBlankRecipe; } set { appSettings.AlwaysAutoGenerateBlankRecipe = value; } }
+		public bool AlwaysAutoGenerateSmallAlbedo { get { return appSettings.AlwaysAutoGenerateSmallAlbedo; } set { appSettings.AlwaysAutoGenerateSmallAlbedo = value; } }
 
 		public SettingsManager()
 		{

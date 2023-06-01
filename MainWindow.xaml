@@ -257,7 +257,7 @@
 									<ColumnDefinition/>
 								</Grid.ColumnDefinitions>
 								<CheckBox Grid.Column="0" Name="BlankRecipeImage_Checkbox" Content="Use Blank Recipe Preview" Checked="BlankRecipeImage_Checkbox_Checked" Unchecked="BlankRecipeImage_Checkbox_Unchecked"/>
-								<CheckBox Grid.Column="1" Name="AutoGenerateSmallAlbedo_Checkbox" Content="Auto Generate Small Albedo"/>
+								<CheckBox Grid.Column="1" Name="AutoGenerateSmallAlbedo_Checkbox" Content="Auto Generate Small Albedo" Checked="AutoGenerateSmallAlbedo_Checkbox_Checked" Unchecked="AutoGenerateSmallAlbedo_Checkbox_Unchecked"/>
 							</Grid>
 						</Expander>
 						<ScrollViewer Grid.Row="2" MaxHeight="280">

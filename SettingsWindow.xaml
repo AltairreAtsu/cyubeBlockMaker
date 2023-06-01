@@ -47,6 +47,18 @@
 				</TextBlock>
 				<CheckBox Grid.Column="1" Name="GenerateBlankRecipe_Checkbox" Checked="GenerateBlankRecipe_Checkbox_Checked" Unchecked="GenerateBlankRecipe_Checkbox_Unchecked"/>
 			</Grid>
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition/>
+					<ColumnDefinition/>
+				</Grid.ColumnDefinitions>
+				<TextBlock Margin="5,0,0,0">
+					Always auto generate
+					<LineBreak/>
+					Small albedo textures:
+				</TextBlock>
+				<CheckBox Grid.Column="1" Name="AutoGenerateSmallAlbedo_Checkbox" Checked="AutoGenerateSmallAlbedo_Checkbox_Checked" Unchecked="AutoGenerateSmallAlbedo_Checkbox_Unchecked"/>
+			</Grid>
 		</StackPanel>
 	</Grid>
 </Window>

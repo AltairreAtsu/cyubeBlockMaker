@@ -33,6 +33,7 @@ namespace CyubeBlockMaker
 			if(settingsManager.UserHasSelectedImageApp)
 				AppName_Label.Content = System.IO.Path.GetFileNameWithoutExtension(settingsManager.ImageAppPath);
 			GenerateBlankRecipe_Checkbox.IsChecked = settingsManager.AlwaysAutoGenerateBlankRecipe;
+			AutoGenerateSmallAlbedo_Checkbox.IsChecked = settingsManager.AlwaysAutoGenerateSmallAlbedo;
 		}
 
 		private void CreatorNamePreFill_TextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -77,5 +78,15 @@ namespace CyubeBlockMaker
 		{
 			SettingsManager.AlwaysAutoGenerateBlankRecipe = false;
 		}
-    }
+
+		private void AutoGenerateSmallAlbedo_Checkbox_Checked(object sender, RoutedEventArgs e)
+		{
+			SettingsManager.AlwaysAutoGenerateSmallAlbedo = true;
+		}
+
+		private void AutoGenerateSmallAlbedo_Checkbox_Unchecked(object sender, RoutedEventArgs e)
+		{
+			SettingsManager.AlwaysAutoGenerateSmallAlbedo= false;
+		}
+	}
 }

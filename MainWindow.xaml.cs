@@ -43,7 +43,8 @@ namespace CyubeBlockMaker
 
 		private bool allowMove = true;
 		private bool allowCrystalPlacement = true;
-		private bool useBlankRecipe = false;
+		private bool useBlankRecipeImage = false;
+		private bool autoGenerateSmallAlbedo = false;
 		private int similiarTo = 0;
 		private int animationSpeed = 0;
 		private int yield = 0;
@@ -67,16 +68,17 @@ namespace CyubeBlockMaker
 			InitializeTextureTab();
 			InitializeWorkspace();
 			ResetCreatorName();
+			ResetAutoGenerateSmallAlbedo();
 		}
 
 		private void InitializeTextureTab()
 		{
-			useBlankRecipe = settingsManager.AlwaysAutoGenerateBlankRecipe;
-			BlankRecipeImage_Checkbox.IsChecked = useBlankRecipe;
+			useBlankRecipeImage = settingsManager.AlwaysAutoGenerateBlankRecipe;
+			BlankRecipeImage_Checkbox.IsChecked = useBlankRecipeImage;
 
 			AddTexturePanel("all", TexturePanelType.Albedo);
 			AddTexturePanel("all_small", TexturePanelType.Albedo_Small);
-			if(!useBlankRecipe)
+			if(!useBlankRecipeImage)
 				AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
 		}
 		
@@ -110,6 +112,7 @@ namespace CyubeBlockMaker
 			TextureMode_ComboBox.SelectedIndex = 0;
 			TextureTabWrapPanel.Children.Clear();
 			ResetAutoGenerateBlankRecipe();
+			ResetAutoGenerateSmallAlbedo();
 			
 			TextureMode_ComboBox_SelectionChanged(null, null);
 
@@ -143,7 +146,12 @@ namespace CyubeBlockMaker
 		private void ResetAutoGenerateBlankRecipe()
 		{
 			BlankRecipeImage_Checkbox.IsChecked = settingsManager.AlwaysAutoGenerateBlankRecipe;
-			useBlankRecipe = settingsManager.AlwaysAutoGenerateBlankRecipe;
+			useBlankRecipeImage = settingsManager.AlwaysAutoGenerateBlankRecipe;
+		}
+		private void ResetAutoGenerateSmallAlbedo()
+		{
+			AutoGenerateSmallAlbedo_Checkbox.IsChecked = settingsManager.AlwaysAutoGenerateSmallAlbedo;
+			autoGenerateSmallAlbedo = settingsManager.AlwaysAutoGenerateSmallAlbedo;
 		}
 
 		#region FileOptionMethods
@@ -371,7 +379,7 @@ namespace CyubeBlockMaker
 							File.Copy(imageTempDest, imageDestPath, true);
 						}
 					}
-					if(useBlankRecipe)
+					if(useBlankRecipeImage)
 					{
 						draw.Bitmap bmp = new draw.Bitmap(512, 512);
 						var gpr = draw.Graphics.FromImage(bmp);
@@ -384,6 +392,24 @@ namespace CyubeBlockMaker
 						proc.WaitForExit();
 
 						File.Copy(imageTempDest, imageDestPath, true);
+					}
+					if (autoGenerateSmallAlbedo)
+					{
+						foreach(TexturePanel panel in texturePanels)
+						{
+							if(panel != null && panel.textureType == TexturePanelType.Albedo)
+							{
+								string imagePath = panel.TextureURI.LocalPath;
+
+								File.Copy(imagePath, imageTempPath, true);
+
+								string imageDestPath = textureDir + panel.slotName + "_small.dds";
+								var proc = System.Diagnostics.Process.Start(texTool, GetAlbedoResizeExportCLIParams(imageTempPath, imageTempDest));
+								proc.WaitForExit();
+
+								File.Copy(imageTempDest, imageDestPath, true);
+							}
+						}
 					}
 
 					File.Delete(imageTempPath);
@@ -787,7 +813,7 @@ namespace CyubeBlockMaker
 				AddTexturePanel("sides_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("updown", TexturePanelType.Albedo);
 				AddTexturePanel("updown_smal", TexturePanelType.Albedo_Small);
-				if (!useBlankRecipe)
+				if (!useBlankRecipeImage)
 					AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
 
 				if (WithNormals_CheckBox.IsChecked == true)
@@ -803,7 +829,7 @@ namespace CyubeBlockMaker
 				AddTexturePanel("up_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("down", TexturePanelType.Albedo);
 				AddTexturePanel("down_small", TexturePanelType.Albedo_Small);
-				if (!useBlankRecipe)
+				if (!useBlankRecipeImage)
 					AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
 
 				if (WithNormals_CheckBox.IsChecked == true)
@@ -825,7 +851,7 @@ namespace CyubeBlockMaker
 				AddTexturePanel("front_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("back", TexturePanelType.Albedo);
 				AddTexturePanel("back_small", TexturePanelType.Albedo_Small);
-				if (!useBlankRecipe)
+				if (!useBlankRecipeImage)
 					AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
 
 				if (WithNormals_CheckBox.IsChecked == true)
@@ -930,6 +956,34 @@ namespace CyubeBlockMaker
 
 			texturePanels.Add(texturePanel);
 			TextureTabWrapPanel.Children.Add(texturePanel);
+		}
+
+		private void AddSmallTextureMapPanels(int textureMode)
+		{
+			if (textureMode == 0)
+			{
+				AddTexturePanel("all_small", TexturePanelType.Albedo_Small);
+			}
+			if (textureMode == 1)
+			{
+				AddTexturePanel("sides_small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("updown_small", TexturePanelType.Albedo_Small);
+			}
+			if(textureMode == 2)
+			{
+				AddTexturePanel("sides_small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("up_small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("down_small", TexturePanelType.Albedo_Small);
+			}
+			if(textureMode == 3)
+			{
+				AddTexturePanel("up_small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("down_small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("left_small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("right_small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("front_small", TexturePanelType.Albedo_Small);
+				AddTexturePanel("back_small", TexturePanelType.Albedo_Small);
+			}
 		}
 
 		private void WithNormals_CheckBox_Checked(object sender, RoutedEventArgs e)
@@ -1048,6 +1102,10 @@ namespace CyubeBlockMaker
 		private string GetGlowExportCLIParams(string sourceImagePath, string targetImagePath)
 		{
 			return "-i " + sourceImagePath + " -o " + targetImagePath + " -nout -m -f BC1,UBN,sRGB -q pvrtcbest";
+		}
+		private string GetAlbedoResizeExportCLIParams(string sourceImagePath, string targetImagePath)
+		{
+			return "-i " + sourceImagePath + " -o " + targetImagePath + " -nout -m -f BC3,UBN,sRGB -q pvrtcbest -r 512,512";
 		}
 		#endregion
 
@@ -1224,13 +1282,24 @@ namespace CyubeBlockMaker
 
 		private void BlankRecipeImage_Checkbox_Checked(object sender, RoutedEventArgs e)
 		{
-			useBlankRecipe = BlankRecipeImage_Checkbox.IsChecked.Value;
+			useBlankRecipeImage = BlankRecipeImage_Checkbox.IsChecked.Value;
 			RemoveAllPanelsOfType(TexturePanelType.RecipePreview);
 		}
 		private void BlankRecipeImage_Checkbox_Unchecked(object sender, RoutedEventArgs e)
 		{
-			useBlankRecipe = BlankRecipeImage_Checkbox.IsChecked.Value;
+			useBlankRecipeImage = BlankRecipeImage_Checkbox.IsChecked.Value;
 			AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
+		}
+
+		private void AutoGenerateSmallAlbedo_Checkbox_Checked(object sender, RoutedEventArgs e)
+		{
+			autoGenerateSmallAlbedo = true;
+			RemoveAllPanelsOfType(TexturePanelType.Albedo_Small);
+		}
+		private void AutoGenerateSmallAlbedo_Checkbox_Unchecked(object sender, RoutedEventArgs e)
+		{
+			autoGenerateSmallAlbedo = false;
+			AddSmallTextureMapPanels(TextureMode_ComboBox.SelectedIndex);
 		}
 		#endregion
 

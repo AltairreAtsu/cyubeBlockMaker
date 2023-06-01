@@ -12,5 +12,6 @@ namespace CyubeBlockMaker
 		public bool SupressNoRecipeWarning = false;
 		public string ImageAppPath = "";
 		public bool AlwaysAutoGenerateBlankRecipe = false;
+		public bool AlwaysAutoGenerateSmallAlbedo = false;
 	}
 }
