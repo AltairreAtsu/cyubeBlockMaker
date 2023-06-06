@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CyubeBlockMaker"
         mc:Ignorable="d"
-        Title="Cyube Block Forge" Height="416" Width="965"
-		MinWidth="800" MinHeight="394"
+        Title="Cyube Block Forge" Height="450" Width="965"
+		MinWidth="800" MinHeight="450"
 		Closing="Window_Closing">
 	<Grid>
 		<Grid.ColumnDefinitions>
@@ -260,7 +260,7 @@
 								<CheckBox Grid.Column="1" Name="AutoGenerateSmallAlbedo_Checkbox" Content="Auto Generate Small Albedo" Checked="AutoGenerateSmallAlbedo_Checkbox_Checked" Unchecked="AutoGenerateSmallAlbedo_Checkbox_Unchecked"/>
 							</Grid>
 						</Expander>
-						<ScrollViewer Grid.Row="2" MaxHeight="280">
+						<ScrollViewer Grid.Row="2" MaxHeight="240">
 							<WrapPanel Name="TextureTabWrapPanel">
 							</WrapPanel>
 						</ScrollViewer>

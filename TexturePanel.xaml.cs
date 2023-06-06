@@ -161,6 +161,8 @@ namespace CyubeBlockMaker
 				MessageBox.Show("You must set a prefered image editing app before you can use these feature!");
 			}
 		}
+
+
 	}
 
 	public enum TexturePanelType
