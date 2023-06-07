@@ -192,8 +192,7 @@
 											<ColumnDefinition Width="2.7*"/>
 										</Grid.ColumnDefinitions>
 										<Label Content="Category" Grid.Column="0"/>
-										<TextBox Name="Category_TextBox" ToolTip="Use this field to specify a category for the block to be placed into in the crafting menu." TextWrapping="Wrap" Grid.Column="1" TextChanged="Category_TextBox_TextChanged"/>
-										<Label Name="CategorySuggestionLabel" Grid.Column="1" FontSize="9" FontStyle="Italic" Foreground="LightGray" Content="What tab your block appears in the crafting menu." IsHitTestVisible="False"/>
+										<local:SuggestionBox ToolTip="Use this field to specify what Crafting category you want your block to appear under in the crafting window. &#x0a; Blocks with the same category name will be grouped together in the same tab by the game." HintText="What tab your block appears under in the crafting window." Grid.Column="1"  x:Name="CategorySuggestionBox" />
 									</Grid>
 									<Grid Grid.Row="0" Grid.Column="1">
 										<Grid.ColumnDefinitions>

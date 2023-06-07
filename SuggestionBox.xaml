@@ -1,0 +1,26 @@
+﻿  <UserControl x:Class="CyubeBlockMaker.SuggestionBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:local="clr-namespace:CyubeBlockMaker"
+             mc:Ignorable="d">
+    <StackPanel x:Name="RootStack" Margin="0" >
+		<Grid>
+			<TextBox x:Name="SuggestionTextField" MinWidth="100" Height="{Binding Height, ElementName=RootStack}" MaxLines="1" KeyUp="TextBox_KeyUp" LostKeyboardFocus="SuggestionTextField_LostKeyboardFocus"/>
+			<Label x:Name="HintLabel" Content="{Binding RelativeSource={RelativeSource FindAncestor, 
+                               AncestorType={x:Type local:SuggestionBox}}, 
+                               Path=HintText}" FontSize="9" FontStyle="Italic" Foreground="LightGray" IsHitTestVisible="False"/>
+		</Grid>
+		<Popup x:Name="SuggestionPopup" Placement="Bottom" >
+			<ScrollViewer x:Name="SuggestionScroller" MinHeight="50" MaxHeight="120" Visibility="Visible" Background="{DynamicResource ScrollView_Background}" HorizontalContentAlignment="Stretch" MinWidth="{Binding ActualWidth, ElementName=RootStack}">
+				<StackPanel x:Name="SuggestionsStack"  Height="18" VerticalAlignment="Top"/>
+			</ScrollViewer>
+		</Popup>
+	</StackPanel>
+	<UserControl.Resources>
+		<SolidColorBrush x:Key="ScrollView_Background" Color="LightGray"/>
+		<SolidColorBrush x:Key="Suggestion_SelectedBackground" Color="LightYellow"/>
+		<SolidColorBrush x:Key="Suggestion_StaticBackground" Color="Transparent"/>
+	</UserControl.Resources>
+</UserControl>

@@ -70,6 +70,7 @@ namespace CyubeBlockMaker
 			InitializeWorkspace();
 			ResetCreatorName();
 			ResetAutoGenerateSmallAlbedo();
+			CategorySuggestionBox.suggestionStrings = workspaceManager.BlockRegistry.GetCategoriesAsList();
 		}
 
 		private void InitializeTextureTab()
@@ -78,7 +79,8 @@ namespace CyubeBlockMaker
 			BlankRecipeImage_Checkbox.IsChecked = useBlankRecipeImage;
 
 			AddTexturePanel("all", TexturePanelType.Albedo);
-			AddTexturePanel("all_small", TexturePanelType.Albedo_Small);
+			if(!autoGenerateSmallAlbedo)
+				AddTexturePanel("all_small", TexturePanelType.Albedo_Small);
 			if(!useBlankRecipeImage)
 				AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
 			SortTexturePanel();
@@ -101,7 +103,7 @@ namespace CyubeBlockMaker
 		public void ResetWindow()
 		{
 			Name_TextBox.Text = string.Empty;
-			Category_TextBox.Text = string.Empty;
+			CategorySuggestionBox.SuggestionTextField.Text = string.Empty;
 			ResetCreatorName();
 			UniqueID_Textbox.Text = string.Empty;
 			Yield_Slider.Value = 0;
@@ -253,7 +255,8 @@ namespace CyubeBlockMaker
 
 			AllowMove_Checkbox.IsChecked = block.AllowMove;
 			AllowCrystalPlace_Checkbox.IsChecked = block.AllowCrystalAssistedBlockPlacement;
-			if (block.CategoryName != null) Category_TextBox.Text = block.CategoryName;
+			//if (block.CategoryName != null) Category_TextBox.Text = block.CategoryName;
+			if (block.CategoryName != null) CategorySuggestionBox.SuggestionTextField.Text = block.CategoryName;
 
 			recipe = block.Recipe;
 
@@ -443,7 +446,8 @@ namespace CyubeBlockMaker
 			CustomBlock block = new CustomBlock();
 			block.Name = Name_TextBox.Text;
 			block.CreatorName = CreatorName_TextBox.Text;
-			block.CategoryName = Category_TextBox.Text;
+			//block.CategoryName = Category_TextBox.Text;
+			block.CategoryName = CategorySuggestionBox.SuggestionTextField.Text;
 			block.UniqueID = uID;
 			block.Yield = (int)Math.Round(Yield_Slider.Value);
 			block.SimilarTo = SimliarTo_ComboBox.SelectedIndex + 1;
@@ -778,18 +782,6 @@ namespace CyubeBlockMaker
 				UniqueIDToDropSuggestionLabel.Visibility = Visibility.Visible;
 			}
 		}
-		private void Category_TextBox_TextChanged(object sender, TextChangedEventArgs e)
-		{
-			dataHasChanged= true;
-			if(Category_TextBox.Text != string.Empty)
-			{
-				CategorySuggestionLabel.Visibility = Visibility.Hidden;
-			}
-			else
-			{
-				CategorySuggestionLabel.Visibility = Visibility.Visible;
-			}
-		}
 		#endregion
 
 		#region TexturePanelMangement
@@ -812,9 +804,12 @@ namespace CyubeBlockMaker
 			if(TextureMode_ComboBox.SelectedIndex == 1)
 			{
 				AddTexturePanel("sides", TexturePanelType.Albedo);
-				AddTexturePanel("sides_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("updown", TexturePanelType.Albedo);
-				AddTexturePanel("updown_smal", TexturePanelType.Albedo_Small);
+				if (!autoGenerateSmallAlbedo)
+				{
+					AddTexturePanel("sides_small", TexturePanelType.Albedo_Small);
+					AddTexturePanel("updown_small", TexturePanelType.Albedo_Small);
+				}
 				if (!useBlankRecipeImage)
 					AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
 
@@ -826,13 +821,18 @@ namespace CyubeBlockMaker
 			if(TextureMode_ComboBox.SelectedIndex == 2)
 			{
 				AddTexturePanel("sides", TexturePanelType.Albedo);
-				AddTexturePanel("sides_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("up", TexturePanelType.Albedo);
-				AddTexturePanel("up_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("down", TexturePanelType.Albedo);
-				AddTexturePanel("down_small", TexturePanelType.Albedo_Small);
+				
+				if (!autoGenerateSmallAlbedo)
+				{
+					AddTexturePanel("sides_small", TexturePanelType.Albedo_Small);
+					AddTexturePanel("up_small", TexturePanelType.Albedo_Small);
+					AddTexturePanel("down_small", TexturePanelType.Albedo_Small);
+				}
 				if (!useBlankRecipeImage)
 					AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
+
 
 				if (WithNormals_CheckBox.IsChecked == true)
 					AddNormalMapPanels(TextureMode_ComboBox.SelectedIndex);
@@ -842,17 +842,21 @@ namespace CyubeBlockMaker
 			if(TextureMode_ComboBox.SelectedIndex == 3)
 			{
 				AddTexturePanel("up", TexturePanelType.Albedo);
-				AddTexturePanel("up_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("down", TexturePanelType.Albedo);
-				AddTexturePanel("down_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("left", TexturePanelType.Albedo);
-				AddTexturePanel("left_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("right", TexturePanelType.Albedo);
-				AddTexturePanel("right_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("front", TexturePanelType.Albedo);
-				AddTexturePanel("front_small", TexturePanelType.Albedo_Small);
 				AddTexturePanel("back", TexturePanelType.Albedo);
-				AddTexturePanel("back_small", TexturePanelType.Albedo_Small);
+
+				if (!autoGenerateSmallAlbedo)
+				{
+					AddTexturePanel("up_small", TexturePanelType.Albedo_Small);
+					AddTexturePanel("down_small", TexturePanelType.Albedo_Small);
+					AddTexturePanel("left_small", TexturePanelType.Albedo_Small);
+					AddTexturePanel("right_small", TexturePanelType.Albedo_Small);
+					AddTexturePanel("front_small", TexturePanelType.Albedo_Small);
+					AddTexturePanel("back_small", TexturePanelType.Albedo_Small);
+				}
 				if (!useBlankRecipeImage)
 					AddTexturePanel("RecipePreview", TexturePanelType.RecipePreview);
 

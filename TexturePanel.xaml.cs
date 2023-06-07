@@ -153,7 +153,8 @@ namespace CyubeBlockMaker
 			{
 				ProcessStartInfo startInfo = new ProcessStartInfo();
 				startInfo.FileName = MainWindow.mainWindow.settingsManager.ImageAppPath;
-				startInfo.Arguments = TextureURI.AbsolutePath;
+				string texPath = TextureURI.AbsolutePath.Replace("%20", " ");
+				startInfo.Arguments = "\"" + texPath +"\"";
 				Process.Start(startInfo);
 			}
 			else
