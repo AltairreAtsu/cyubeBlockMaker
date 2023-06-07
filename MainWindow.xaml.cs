@@ -71,6 +71,7 @@ namespace CyubeBlockMaker
 			ResetCreatorName();
 			ResetAutoGenerateSmallAlbedo();
 			CategorySuggestionBox.suggestionStrings = workspaceManager.BlockRegistry.GetCategoriesAsList();
+			AttemptLocateCyubeInstall();
 		}
 
 		private void InitializeTextureTab()
@@ -156,6 +157,48 @@ namespace CyubeBlockMaker
 		{
 			AutoGenerateSmallAlbedo_Checkbox.IsChecked = settingsManager.AlwaysAutoGenerateSmallAlbedo;
 			autoGenerateSmallAlbedo = settingsManager.AlwaysAutoGenerateSmallAlbedo;
+		}
+		private void AttemptLocateCyubeInstall()
+		{
+			var cyubeInstallLocator = new CyubeInstallLocator();
+			if (!settingsManager.UserHasFoundCyubeInstall)
+			{
+				var result = cyubeInstallLocator.AttemptToAutoLocate();
+				if (result.sucess)
+				{
+					settingsManager.CyubeInstallLocation = result.path;
+				}
+				else
+				{
+					WarnUserInstallNotFound(cyubeInstallLocator);
+				}
+			}
+			else
+			{
+				if (Directory.Exists(settingsManager.CyubeInstallLocation))
+				{
+					if (!cyubeInstallLocator.IsCyubeRootFolder(settingsManager.CyubeInstallLocation))
+					{
+						WarnUserInstallNotFound(cyubeInstallLocator);
+					}
+				}
+				else
+				{
+					WarnUserInstallNotFound(cyubeInstallLocator);
+				}
+			}
+		}
+		private void WarnUserInstallNotFound(CyubeInstallLocator cyubeInstallLocator)
+		{
+			if (MessageBox.Show("Cyube Install not detected! Would you like to update your install location now? Some app features will be disabled if you don't!", "404 Cyube not found!", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+			{
+				var result = cyubeInstallLocator.OpenSearchBroswer();
+				if (result.sucess)
+				{
+					settingsManager.CyubeInstallLocation = result.path;
+					settingsManager.SaveSettings();
+				}
+			}
 		}
 
 		#region FileOptionMethods

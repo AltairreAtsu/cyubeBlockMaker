@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using Ookii.Dialogs.Wpf;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -32,6 +33,8 @@ namespace CyubeBlockMaker
 			SupressNoRecipeWarning_CheckBox.IsChecked = settingsManager.SupressNoRecipeWarning;
 			if(settingsManager.UserHasSelectedImageApp)
 				AppName_Label.Content = System.IO.Path.GetFileNameWithoutExtension(settingsManager.ImageAppPath);
+			if (settingsManager.UserHasFoundCyubeInstall)
+				CyubeInstall_Label.Content = settingsManager.CyubeInstallLocation;
 			GenerateBlankRecipe_Checkbox.IsChecked = settingsManager.AlwaysAutoGenerateBlankRecipe;
 			AutoGenerateSmallAlbedo_Checkbox.IsChecked = settingsManager.AlwaysAutoGenerateSmallAlbedo;
 		}
@@ -88,5 +91,16 @@ namespace CyubeBlockMaker
 		{
 			SettingsManager.AlwaysAutoGenerateSmallAlbedo= false;
 		}
-	}
+
+		private void SelectCyubeInstall_Button_Click(object sender, RoutedEventArgs e)
+		{
+			CyubeInstallLocator cyubeInstallLocator = new CyubeInstallLocator();
+			var result = cyubeInstallLocator.OpenSearchBroswer();
+			if (result.sucess)
+			{
+				SettingsManager.CyubeInstallLocation = result.path;
+				CyubeInstall_Label.Content = result.path;
+			}
+        }
+    }
 }

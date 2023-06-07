@@ -27,16 +27,6 @@
 			</Grid>
 			<Grid>
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="137*"/>
-					<ColumnDefinition Width="162*"/>
-					<ColumnDefinition Width="31*"/>
-				</Grid.ColumnDefinitions>
-				<Label Grid.Column="0" Content="Image Editing Program:"/>
-				<Label Grid.Column="1" Name="AppName_Label" HorizontalAlignment="Right" Content="No App Selected"/>
-				<Button Grid.Column="2" Name="SelectApp_Button" Content="..." Click="SelectApp_Button_Click"/>
-			</Grid>
-			<Grid>
-				<Grid.ColumnDefinitions>
 					<ColumnDefinition/>
 					<ColumnDefinition/>
 				</Grid.ColumnDefinitions>
@@ -58,6 +48,26 @@
 					Small albedo textures:
 				</TextBlock>
 				<CheckBox Grid.Column="1" Name="AutoGenerateSmallAlbedo_Checkbox" Checked="AutoGenerateSmallAlbedo_Checkbox_Checked" Unchecked="AutoGenerateSmallAlbedo_Checkbox_Unchecked"/>
+			</Grid>
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="133*"/>
+					<ColumnDefinition Width="166*"/>
+					<ColumnDefinition Width="31*"/>
+				</Grid.ColumnDefinitions>
+				<Label Grid.Column="0" Content="Cyube Install Directory:"/>
+				<Label Grid.Column="1" Name="CyubeInstall_Label" Content="No install detected" FontSize="9" HorizontalAlignment="Right" VerticalAlignment="Center" Height="22"/>
+				<Button Grid.Column="2" Name="SelectCyubeInstall_Button" Content="..." Click="SelectCyubeInstall_Button_Click"/>
+			</Grid>
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="137*"/>
+					<ColumnDefinition Width="162*"/>
+					<ColumnDefinition Width="31*"/>
+				</Grid.ColumnDefinitions>
+				<Label Grid.Column="0" Content="Image Editing Program:"/>
+				<Label Grid.Column="1" Name="AppName_Label" FontSize="9" HorizontalAlignment="Right" Content="No App Selected"/>
+				<Button Grid.Column="2" Name="SelectApp_Button" Content="..." Click="SelectApp_Button_Click"/>
 			</Grid>
 		</StackPanel>
 	</Grid>

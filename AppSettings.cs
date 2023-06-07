@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CyubeBlockMaker
+﻿namespace CyubeBlockMaker
 {
 	public class AppSettings
 	{
@@ -13,5 +7,6 @@ namespace CyubeBlockMaker
 		public string ImageAppPath = "";
 		public bool AlwaysAutoGenerateBlankRecipe = false;
 		public bool AlwaysAutoGenerateSmallAlbedo = false;
+		public string CyubeInstallLocation = "";
 	}
 }
